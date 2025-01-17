@@ -23,6 +23,38 @@ async function run() {
   try {
     // collections
     const coursesCollection = client.db("greenfieldUniversityDB").collection("courses");
+    const studentsCollection = client.db("greenfieldUniversityDB").collection("students");
+    const instructorsCollection = client.db("greenfieldUniversityDB").collection("instructors");
+
+    // registration related apis
+
+    // id validation
+    app.post("/auth/validate", async (req, res) => {
+      const { id, role } = req.body;
+      if (role === "Student") {
+        const student = await studentsCollection.findOne({ studentId: id });
+        if (student) {
+          if (student.isRegistered) {
+            res.send({ success: false, message: "Student already registered" });
+          } else {
+            res.send({ success: true, message: "ID is valid" });
+          }
+        } else {
+          res.send({ success: false, message: "Invalid student ID" });
+        }
+      } else if (role === "Instructor") {
+        const instructor = await instructorsCollection.findOne({ instructorId: id });
+        if (instructor) {
+          if (instructor.isRegistered) {
+            res.send({ success: false, message: "Instructor already registered" });
+          } else {
+            res.send({ success: true, message: "ID is valid" });
+          }
+        } else {
+          res.send({ success: false, message: "Invalid instructor ID" });
+        }
+      }
+    });
 
     // course related apis
 
