@@ -29,6 +29,23 @@ async function run() {
 
     // registration related apis
 
+    // registration
+    app.patch("/auth/register", async (req, res) => {
+      const { id, role, name, email } = req.body;
+      const collection = role === "Student" ? studentsCollection : instructorsCollection;
+      const filter = { [`${role.toLowerCase()}Id`]: id };
+      const updateDoc = {
+        $set: {
+          isRegistered: true,
+          name,
+          email,
+        },
+      };
+      const result = await collection.updateOne(filter, updateDoc);
+
+      res.send(result);
+    });
+
     // id validation
     app.post("/auth/validate", async (req, res) => {
       const { id, role } = req.body;
