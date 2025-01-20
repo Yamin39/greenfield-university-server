@@ -26,6 +26,7 @@ async function run() {
     const studentsCollection = client.db("greenfieldUniversityDB").collection("students");
     const instructorsCollection = client.db("greenfieldUniversityDB").collection("instructors");
     const announcementsCollection = client.db("greenfieldUniversityDB").collection("announcements");
+    const universityIdsCollection = client.db("greenfieldUniversityDB").collection("universityIds");
 
     // registration related apis
 
@@ -49,28 +50,15 @@ async function run() {
     // id validation
     app.post("/auth/validate", async (req, res) => {
       const { id, role } = req.body;
-      if (role === "Student") {
-        const student = await studentsCollection.findOne({ studentId: id });
-        if (student) {
-          if (student.isRegistered) {
-            res.send({ success: false, message: "Student already registered" });
-          } else {
-            res.send({ success: true, message: "ID is valid" });
-          }
+      const universityId = await universityIdsCollection.findOne({ universityId: id });
+      if (universityId) {
+        if (universityId.isRegistered) {
+          res.send({ success: false, message: `${role} already registered` });
         } else {
-          res.send({ success: false, message: "Invalid student ID" });
+          res.send({ success: true, message: "ID is valid" });
         }
-      } else if (role === "Instructor") {
-        const instructor = await instructorsCollection.findOne({ instructorId: id });
-        if (instructor) {
-          if (instructor.isRegistered) {
-            res.send({ success: false, message: "Instructor already registered" });
-          } else {
-            res.send({ success: true, message: "ID is valid" });
-          }
-        } else {
-          res.send({ success: false, message: "Invalid instructor ID" });
-        }
+      } else {
+        res.send({ success: false, message: `Invalid ${role} ID` });
       }
     });
 
