@@ -23,28 +23,33 @@ async function run() {
   try {
     // collections
     const coursesCollection = client.db("greenfieldUniversityDB").collection("courses");
-    const studentsCollection = client.db("greenfieldUniversityDB").collection("students");
-    const instructorsCollection = client.db("greenfieldUniversityDB").collection("instructors");
     const announcementsCollection = client.db("greenfieldUniversityDB").collection("announcements");
     const universityIdsCollection = client.db("greenfieldUniversityDB").collection("universityIds");
+    const usersCollection = client.db("greenfieldUniversityDB").collection("users");
 
     // registration related apis
 
     // registration
     app.patch("/auth/register", async (req, res) => {
       const { id, role, name, email } = req.body;
-      const collection = role === "Student" ? studentsCollection : instructorsCollection;
-      const filter = { [`${role.toLowerCase()}Id`]: id };
+      const filter = { universityId: id };
       const updateDoc = {
         $set: {
           isRegistered: true,
-          name,
-          email,
         },
       };
-      const result = await collection.updateOne(filter, updateDoc);
+      const updateIsRegistered = await universityIdsCollection.updateOne(filter, updateDoc);
 
-      res.send(result);
+      if (updateIsRegistered.modifiedCount === 1) {
+        const user = await usersCollection.insertOne({ name, email, role, universityId: id });
+        if (user.insertedId) {
+          res.send({ success: true, message: "Successfully registered" });
+        } else {
+          res.send({ success: false, message: "Failed to register" });
+        }
+      } else {
+        res.send({ success: false, message: "Failed to register" });
+      }
     });
 
     // id validation
