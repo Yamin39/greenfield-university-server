@@ -26,6 +26,7 @@ async function run() {
     const announcementsCollection = client.db("greenfieldUniversityDB").collection("announcements");
     const universityIdsCollection = client.db("greenfieldUniversityDB").collection("universityIds");
     const usersCollection = client.db("greenfieldUniversityDB").collection("users");
+    const faqsCollection = client.db("greenfieldUniversityDB").collection("faqs");
 
     // registration related apis
 
@@ -78,6 +79,13 @@ async function run() {
 
     app.get("/announcements", async (req, res) => {
       const result = await announcementsCollection.find().toArray();
+      res.send(result);
+    });
+
+    // faqs related apis
+
+    app.get("/faqs", async (req, res) => {
+      const result = await faqsCollection.find().toArray();
       res.send(result);
     });
 
