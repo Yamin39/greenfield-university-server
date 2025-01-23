@@ -22,7 +22,6 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // collections
-    const coursesCollection = client.db("greenfieldUniversityDB").collection("courses");
     const announcementsCollection = client.db("greenfieldUniversityDB").collection("announcements");
     const universityIdsCollection = client.db("greenfieldUniversityDB").collection("universityIds");
     const usersCollection = client.db("greenfieldUniversityDB").collection("users");
@@ -67,13 +66,6 @@ async function run() {
       } else {
         res.send({ success: false, message: `Invalid ${role} ID` });
       }
-    });
-
-    // course related apis
-
-    app.get("/courses", async (req, res) => {
-      const result = await coursesCollection.find().toArray();
-      res.send(result);
     });
 
     // announcements related apis
