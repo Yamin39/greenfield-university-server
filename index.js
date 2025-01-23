@@ -22,6 +22,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // collections
+    const instructorsCollection = client.db("greenfieldUniversityDB").collection("instructors");
     const announcementsCollection = client.db("greenfieldUniversityDB").collection("announcements");
     const universityIdsCollection = client.db("greenfieldUniversityDB").collection("universityIds");
     const usersCollection = client.db("greenfieldUniversityDB").collection("users");
@@ -68,6 +69,13 @@ async function run() {
       }
     });
 
+    // instructor related apis
+
+    app.get("/instructors", async (req, res) => {
+      const result = await instructorsCollection.find().toArray();
+      res.send(result);
+    });
+
     // announcements related apis
 
     app.get("/announcements", async (req, res) => {
@@ -75,12 +83,12 @@ async function run() {
       res.send(result);
     });
 
-    app.get('/announcement/:id', async (req, res) => {
+    app.get("/announcement/:id", async (req, res) => {
       const id = req.params.id;
-      const query = { _id: new ObjectId(id) }
+      const query = { _id: new ObjectId(id) };
       const result = await announcementsCollection.findOne(query);
-      res.send(result)
-    })
+      res.send(result);
+    });
 
     // faqs related apis
 
