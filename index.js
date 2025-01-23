@@ -7,7 +7,7 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.6fu63x8.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
@@ -22,7 +22,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // collections
-    const coursesCollection = client.db("greenfieldUniversityDB").collection("courses");
+    const instructorsCollection = client.db("greenfieldUniversityDB").collection("instructors");
     const announcementsCollection = client.db("greenfieldUniversityDB").collection("announcements");
     const universityIdsCollection = client.db("greenfieldUniversityDB").collection("universityIds");
     const usersCollection = client.db("greenfieldUniversityDB").collection("users");
@@ -69,10 +69,10 @@ async function run() {
       }
     });
 
-    // course related apis
+    // instructor related apis
 
-    app.get("/courses", async (req, res) => {
-      const result = await coursesCollection.find().toArray();
+    app.get("/instructors", async (req, res) => {
+      const result = await instructorsCollection.find().toArray();
       res.send(result);
     });
 
@@ -80,6 +80,13 @@ async function run() {
 
     app.get("/announcements", async (req, res) => {
       const result = await announcementsCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.get("/announcement/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await announcementsCollection.findOne(query);
       res.send(result);
     });
 
