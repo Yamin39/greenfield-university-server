@@ -76,6 +76,13 @@ async function run() {
       res.send(result);
     });
 
+    app.get('/instructor/:id', async(req, res) =>{
+      const id = req.params.id;
+      const query = {_id : new ObjectId(id)}
+      const result = await instructorsCollection.findOne(query);
+      res.send(result)
+    })
+
     // announcements related apis
 
     app.get("/announcements", async (req, res) => {
