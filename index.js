@@ -23,6 +23,7 @@ async function run() {
   try {
     // collections
     const instructorsCollection = client.db("greenfieldUniversityDB").collection("instructors");
+    const blogsCollection = client.db("greenfieldUniversityDB").collection("blogs");
     const announcementsCollection = client.db("greenfieldUniversityDB").collection("announcements");
     const universityIdsCollection = client.db("greenfieldUniversityDB").collection("universityIds");
     const usersCollection = client.db("greenfieldUniversityDB").collection("users");
@@ -82,6 +83,13 @@ async function run() {
       const result = await instructorsCollection.findOne(query);
       res.send(result)
     })
+
+    // blogs related apis
+
+    app.get("/blogs", async (req, res) => {
+      const result = await blogsCollection.find().toArray();
+      res.send(result);
+    });
 
     // announcements related apis
 
