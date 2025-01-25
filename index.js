@@ -97,7 +97,7 @@ async function run() {
       res.send(result);
     });
 
-    // faqs related apis
+    // faqs related apis  
 
     app.get("/faqs", async (req, res) => {
       const result = await faqsCollection.find().toArray();
