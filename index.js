@@ -126,6 +126,12 @@ async function run() {
       res.send(result);
     });
 
+    app.post('/announcement', async(req, res) =>{
+      const announcement = req.body;
+      const result = await announcementsCollection.insertOne(announcement);
+      res.send(result)
+    })
+
     // faqs related apis
 
     app.get("/faqs", async (req, res) => {
