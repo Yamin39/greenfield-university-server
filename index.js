@@ -98,6 +98,20 @@ async function run() {
       res.send(result);
     });
 
+    // post a comment
+    app.patch("/blogs/:id/comment", async (req, res) => {
+      const id = req.params.id;
+      const newComment = req.body;
+      const query = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $push: {
+          comments: newComment,
+        },
+      };
+      const result = await blogsCollection.updateOne(query, updateDoc);
+      res.send(result);
+    });
+
 // announcements related apis
 
     app.get("/announcements", async (req, res) => {
