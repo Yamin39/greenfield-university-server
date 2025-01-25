@@ -91,7 +91,14 @@ async function run() {
       res.send(result);
     });
 
-    // announcements related apis
+    app.get("/blogs/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await blogsCollection.findOne(query);
+      res.send(result);
+    });
+
+// announcements related apis
 
     app.get("/announcements", async (req, res) => {
       const result = await announcementsCollection.find().toArray();
