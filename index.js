@@ -30,6 +30,7 @@ async function run() {
     const faqsCollection = client.db("greenfieldUniversityDB").collection("faqs");
     const galleryImagesCollection = client.db("greenfieldUniversityDB").collection("galleryImages");
     const testimonialsCollection = client.db("greenfieldUniversityDB").collection("testimonials");
+    const coursesCollection = client.db("greenfieldUniversityDB").collection("courses");
 
     // registration related apis
 
@@ -171,6 +172,20 @@ async function run() {
 
     app.get("/testimonials", async (req, res) => {
       const result = await testimonialsCollection.find().toArray();
+      res.send(result);
+    });
+
+    // courses related apis
+
+    app.get("/courses", async (req, res) => {
+      const result = await coursesCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.get("/course/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await coursesCollection.findOne(query);
       res.send(result);
     });
 
