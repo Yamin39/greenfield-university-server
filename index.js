@@ -29,6 +29,7 @@ async function run() {
     const usersCollection = client.db("greenfieldUniversityDB").collection("users");
     const faqsCollection = client.db("greenfieldUniversityDB").collection("faqs");
     const galleryImagesCollection = client.db("greenfieldUniversityDB").collection("galleryImages");
+    const testimonialsCollection = client.db("greenfieldUniversityDB").collection("testimonials");
 
     // registration related apis
 
@@ -166,7 +167,12 @@ async function run() {
       res.send(result);
     })
 
-    
+    // testimonials related apis
+
+    app.get("/testimonials", async (req, res) => {
+      const result = await testimonialsCollection.find().toArray();
+      res.send(result);
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
