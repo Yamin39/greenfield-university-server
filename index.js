@@ -100,6 +100,15 @@ async function run() {
       res.send(result);
     });
 
+    // delete a blog
+
+    app.delete('/blog/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await blogsCollection.deleteOne(query);
+      res.send(result)
+    })
+
     // post a comment
     app.patch("/blogs/:id/comment", async (req, res) => {
       const id = req.params.id;
@@ -114,7 +123,13 @@ async function run() {
       res.send(result);
     });
 
-// announcements related apis
+    app.post('/blog', async(req, res) =>{
+      const blog = req.body;
+      const result = await blogsCollection.insertOne(blog);
+      res.send(result)
+    })
+
+    // announcements related apis
 
     app.get("/announcements", async (req, res) => {
       const result = await announcementsCollection.find().toArray();
@@ -151,7 +166,7 @@ async function run() {
     // gallery images related apis
 
     app.get("/gallery", async (req, res) => {
-      const result = await galleryImagesCollection.find().sort({_id : -1}).toArray();
+      const result = await galleryImagesCollection.find().sort({ _id: -1 }).toArray();
       res.send(result);
     });
 
@@ -161,9 +176,9 @@ async function run() {
       res.send(result)
     })
 
-    app.delete('/gallery/:id', async(req, res) =>{
+    app.delete('/gallery/:id', async (req, res) => {
       const id = req.params.id;
-      const query = {_id : new ObjectId(id)};
+      const query = { _id: new ObjectId(id) };
       const result = await galleryImagesCollection.deleteOne(query);
       res.send(result);
     })
