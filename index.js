@@ -129,6 +129,20 @@ async function run() {
       res.send(result)
     })
 
+    app.patch('/blog/:id', async(req, res) =>{
+      const id = req.params.id;
+      const blog = req.body;
+      console.log(blog);
+      const query = {_id : new ObjectId(id)}
+      const updateDoc = {
+        $set : {
+          ...blog
+        }
+      }
+      const result = await blogsCollection.updateOne(query, updateDoc)
+      res.send(result)
+    })
+
     // announcements related apis
 
     app.get("/announcements", async (req, res) => {
