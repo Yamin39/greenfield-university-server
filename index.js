@@ -29,6 +29,8 @@ async function run() {
     const usersCollection = client.db("greenfieldUniversityDB").collection("users");
     const faqsCollection = client.db("greenfieldUniversityDB").collection("faqs");
     const galleryImagesCollection = client.db("greenfieldUniversityDB").collection("galleryImages");
+    const testimonialsCollection = client.db("greenfieldUniversityDB").collection("testimonials");
+    const coursesCollection = client.db("greenfieldUniversityDB").collection("courses");
 
     // registration related apis
 
@@ -77,9 +79,9 @@ async function run() {
       res.send(result);
     });
 
-    app.get('/instructor/:id', async(req, res) =>{
+    app.get('/instructor/:id', async (req, res) => {
       const id = req.params.id;
-      const query = {_id : new ObjectId(id)}
+      const query = { _id: new ObjectId(id) }
       const result = await instructorsCollection.findOne(query);
       res.send(result)
     })
@@ -90,6 +92,42 @@ async function run() {
       const result = await blogsCollection.find().toArray();
       res.send(result);
     });
+
+    app.get("/blogs/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await blogsCollection.findOne(query);
+      res.send(result);
+    });
+
+    // delete a blog
+
+    app.delete('/blog/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await blogsCollection.deleteOne(query);
+      res.send(result)
+    })
+
+    // post a comment
+    app.patch("/blogs/:id/comment", async (req, res) => {
+      const id = req.params.id;
+      const newComment = req.body;
+      const query = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $push: {
+          comments: newComment,
+        },
+      };
+      const result = await blogsCollection.updateOne(query, updateDoc);
+      res.send(result);
+    });
+
+    app.post('/blog', async(req, res) =>{
+      const blog = req.body;
+      const result = await blogsCollection.insertOne(blog);
+      res.send(result)
+    })
 
     // announcements related apis
 
@@ -105,6 +143,19 @@ async function run() {
       res.send(result);
     });
 
+    app.post('/announcement', async (req, res) => {
+      const announcement = req.body;
+      const result = await announcementsCollection.insertOne(announcement);
+      res.send(result)
+    })
+
+    app.delete('/announcement/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await announcementsCollection.deleteOne(query);
+      res.send(result)
+    })
+
     // faqs related apis
 
     app.get("/faqs", async (req, res) => {
@@ -115,7 +166,41 @@ async function run() {
     // gallery images related apis
 
     app.get("/gallery", async (req, res) => {
-      const result = await galleryImagesCollection.find().toArray();
+      const result = await galleryImagesCollection.find().sort({ _id: -1 }).toArray();
+      res.send(result);
+    });
+
+    app.post('/gallery', async (req, res) => {
+      const image = req.body;
+      const result = await galleryImagesCollection.insertOne(image);
+      res.send(result)
+    })
+
+    app.delete('/gallery/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await galleryImagesCollection.deleteOne(query);
+      res.send(result);
+    })
+
+    // testimonials related apis
+
+    app.get("/testimonials", async (req, res) => {
+      const result = await testimonialsCollection.find().toArray();
+      res.send(result);
+    });
+
+    // courses related apis
+
+    app.get("/courses", async (req, res) => {
+      const result = await coursesCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.get("/course/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await coursesCollection.findOne(query);
       res.send(result);
     });
 
