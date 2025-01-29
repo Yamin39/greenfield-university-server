@@ -32,6 +32,7 @@ async function run() {
     const testimonialsCollection = client.db("greenfieldUniversityDB").collection("testimonials");
     const coursesCollection = client.db("greenfieldUniversityDB").collection("courses");
     const eventsCollection = client.db("greenfieldUniversityDB").collection("events");
+    const productsCollection = client.db("greenfieldUniversityDB").collection("products");
 
     // registration related apis
 
@@ -231,6 +232,13 @@ async function run() {
       const query = { _id: new ObjectId(id) };
       const result = await eventsCollection.findOne(query);
       console.log(result);
+      res.send(result);
+    });
+
+    // products related apis
+
+    app.get("/products", async (req, res) => {
+      const result = await productsCollection.find().toArray();
       res.send(result);
     });
 
