@@ -136,12 +136,18 @@ async function run() {
       const blog = req.body;
       console.log(blog);
       const query = {_id : new ObjectId(id)}
-      const updateDoc = {
+      const updatedDoc = {
         $set : {
-          ...blog
+          title : blog.title,
+          description : blog.description,
+          thumbnail : blog.thumbnail,
+          timestamp : blog.timestamp,
+          tags : blog.tags,
+          category : blog.category,
+          "author.role" : blog.author.role
         }
       }
-      const result = await blogsCollection.updateOne(query, updateDoc)
+      const result = await blogsCollection.updateOne(query, updatedDoc)
       res.send(result)
     })
 
@@ -169,6 +175,22 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await announcementsCollection.deleteOne(query);
+      res.send(result)
+    })
+
+    app.patch('/announcement/:id', async(req, res) =>{
+      const id = req.params.id;
+      const announcement = req.body;
+      const query = {_id : new ObjectId(id)}
+      const updatedDoc = {
+        $set : {
+          title : announcement.title,
+          timestamp : announcement.timestamp,
+          description : announcement.description
+        }
+      }
+
+      const result = await announcementsCollection.updateOne(query, updatedDoc)
       res.send(result)
     })
 
