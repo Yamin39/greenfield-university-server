@@ -134,12 +134,18 @@ async function run() {
       const blog = req.body;
       console.log(blog);
       const query = {_id : new ObjectId(id)}
-      const updateDoc = {
+      const updatedDoc = {
         $set : {
-          ...blog
+          title : blog.title,
+          description : blog.description,
+          thumbnail : blog.thumbnail,
+          timestamp : blog.timestamp,
+          tags : blog.tags,
+          category : blog.category,
+          "author.role" : blog.author.role
         }
       }
-      const result = await blogsCollection.updateOne(query, updateDoc)
+      const result = await blogsCollection.updateOne(query, updatedDoc)
       res.send(result)
     })
 
