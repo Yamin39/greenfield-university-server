@@ -290,6 +290,14 @@ async function run() {
       res.send(result);
     });
 
+    app.post('/course', async(req, res) =>{
+      const course = req.body;
+      const result = await coursesCollection.insertOne(course);
+      res.send(result)
+    })
+
+    // testimonials related api.
+
     app.post("/testimonial", async (req, res) => {
       const testimonial = req.body;
       console.log(testimonial);
