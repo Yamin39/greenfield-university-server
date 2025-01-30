@@ -35,6 +35,7 @@ async function run() {
     const productsCollection = client.db("greenfieldUniversityDB").collection("products");
     const newsCollection = client.db("greenfieldUniversityDB").collection("news");
     const wishlistCollection = client.db("greenfieldUniversityDB").collection("wishlist");
+    const cartCollection = client.db("greenfieldUniversityDB").collection("cart");
 
     // registration related apis
 
@@ -438,6 +439,61 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await wishlistCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    // cart related apis
+
+    app.get("/cart", async (req, res) => {
+      const { email } = req.query;
+
+      const query = {
+          "user.email": email,
+        };
+
+      const result = await cartCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.post("/cart", async (req, res) => {
+      const cart = req.body;
+
+      // check if user already has the product in their cart
+      const query = {
+        "user.email": cart.user.email,
+        productId: cart.productId,
+      };
+
+      const existingCart = await cartCollection.findOne(query);
+
+      if (existingCart) {
+        return res.send({ message: "Product already in cart" });
+      }
+
+      const result = await cartCollection.insertOne(cart);
+      res.send(result);
+    });
+
+    app.delete("/cart/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await cartCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    // update cart quantity
+
+    app.patch("/cart/:id", async (req, res) => {
+      const id = req.params.id;
+      const updatedCart = req.body;
+
+      const query = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          quantity: updatedCart.quantity,
+        },
+      };
+      const result = await cartCollection.updateOne(query, updateDoc);
       res.send(result);
     });
 
