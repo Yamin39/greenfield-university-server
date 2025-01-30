@@ -35,6 +35,7 @@ async function run() {
     const productsCollection = client.db("greenfieldUniversityDB").collection("products");
     const newsCollection = client.db("greenfieldUniversityDB").collection("news");
     const wishlistCollection = client.db("greenfieldUniversityDB").collection("wishlist");
+    const cartCollection = client.db("greenfieldUniversityDB").collection("cart");
 
     // registration related apis
 
@@ -439,6 +440,28 @@ async function run() {
       const result = await wishlistCollection.deleteOne(query);
       res.send(result);
     });
+
+    // cart related apis
+
+    app.post("/cart", async (req, res) => {
+      const cart = req.body;
+
+      // check if user already has the product in their cart
+      const query = {
+        "user.email": cart.user.email,
+        productId: cart.productId,
+      };
+
+      const existingCart = await cartCollection.findOne(query);
+
+      if (existingCart) {
+        return res.send({ message: "Product already in cart" });
+      }
+
+      const result = await cartCollection.insertOne(cart);
+      res.send(result);
+    });
+
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
