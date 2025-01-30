@@ -22,12 +22,33 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // collections
-    const instructorsCollection = client.db("greenfieldUniversityDB").collection("instructors");
-    const announcementsCollection = client.db("greenfieldUniversityDB").collection("announcements");
-    const universityIdsCollection = client.db("greenfieldUniversityDB").collection("universityIds");
-    const usersCollection = client.db("greenfieldUniversityDB").collection("users");
-    const faqsCollection = client.db("greenfieldUniversityDB").collection("faqs");
-    const galleryImagesCollection = client.db("greenfieldUniversityDB").collection("galleryImages");
+    const instructorsCollection = client
+      .db("greenfieldUniversityDB")
+      .collection("instructors");
+    const blogsCollection = client
+      .db("greenfieldUniversityDB")
+      .collection("blogs");
+    const announcementsCollection = client
+      .db("greenfieldUniversityDB")
+      .collection("announcements");
+    const universityIdsCollection = client
+      .db("greenfieldUniversityDB")
+      .collection("universityIds");
+    const usersCollection = client
+      .db("greenfieldUniversityDB")
+      .collection("users");
+    const faqsCollection = client
+      .db("greenfieldUniversityDB")
+      .collection("faqs");
+    const galleryImagesCollection = client
+      .db("greenfieldUniversityDB")
+      .collection("galleryImages");
+    const testimonialsCollection = client
+      .db("greenfieldUniversityDB")
+      .collection("testimonials");
+    const coursesCollection = client
+      .db("greenfieldUniversityDB")
+      .collection("courses");
 
     // registration related apis
 
@@ -40,10 +61,18 @@ async function run() {
           isRegistered: true,
         },
       };
-      const updateIsRegistered = await universityIdsCollection.updateOne(filter, updateDoc);
+      const updateIsRegistered = await universityIdsCollection.updateOne(
+        filter,
+        updateDoc
+      );
 
       if (updateIsRegistered.modifiedCount === 1) {
-        const user = await usersCollection.insertOne({ name, email, role, universityId: id });
+        const user = await usersCollection.insertOne({
+          name,
+          email,
+          role,
+          universityId: id,
+        });
         if (user.insertedId) {
           res.send({ success: true, message: "Successfully registered" });
         } else {
@@ -57,7 +86,9 @@ async function run() {
     // id validation
     app.post("/auth/validate", async (req, res) => {
       const { id, role } = req.body;
-      const universityId = await universityIdsCollection.findOne({ universityId: id });
+      const universityId = await universityIdsCollection.findOne({
+        universityId: id,
+      });
       if (universityId) {
         if (universityId.isRegistered) {
           res.send({ success: false, message: `${role} already registered` });
@@ -76,12 +107,69 @@ async function run() {
       res.send(result);
     });
 
-    app.get('/instructor/:id', async(req, res) =>{
+    app.get("/instructor/:id", async (req, res) => {
       const id = req.params.id;
-      const query = {_id : new ObjectId(id)}
+      const query = { _id: new ObjectId(id) };
       const result = await instructorsCollection.findOne(query);
-      res.send(result)
-    })
+      res.send(result);
+    });
+
+    // blogs related apis
+
+    app.get("/blogs", async (req, res) => {
+      const result = await blogsCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.get("/blogs/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await blogsCollection.findOne(query);
+      res.send(result);
+    });
+
+    // delete a blog
+
+    app.delete("/blog/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await blogsCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    // post a comment
+    app.patch("/blogs/:id/comment", async (req, res) => {
+      const id = req.params.id;
+      const newComment = req.body;
+      const query = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $push: {
+          comments: newComment,
+        },
+      };
+      const result = await blogsCollection.updateOne(query, updateDoc);
+      res.send(result);
+    });
+
+    app.post("/blog", async (req, res) => {
+      const blog = req.body;
+      const result = await blogsCollection.insertOne(blog);
+      res.send(result);
+    });
+
+    app.patch("/blog/:id", async (req, res) => {
+      const id = req.params.id;
+      const blog = req.body;
+      console.log(blog);
+      const query = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          ...blog,
+        },
+      };
+      const result = await blogsCollection.updateOne(query, updateDoc);
+      res.send(result);
+    });
 
     // announcements related apis
 
@@ -97,7 +185,20 @@ async function run() {
       res.send(result);
     });
 
-    // faqs related apis  
+    app.post("/announcement", async (req, res) => {
+      const announcement = req.body;
+      const result = await announcementsCollection.insertOne(announcement);
+      res.send(result);
+    });
+
+    app.delete("/announcement/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await announcementsCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    // faqs related apis
 
     app.get("/faqs", async (req, res) => {
       const result = await faqsCollection.find().toArray();
@@ -107,16 +208,104 @@ async function run() {
     // gallery images related apis
 
     app.get("/gallery", async (req, res) => {
-      const result = await galleryImagesCollection.find().toArray();
+      const result = await galleryImagesCollection
+        .find()
+        .sort({ _id: -1 })
+        .toArray();
       res.send(result);
     });
 
+    app.post("/gallery", async (req, res) => {
+      const image = req.body;
+      const result = await galleryImagesCollection.insertOne(image);
+      res.send(result);
+    });
 
-    // Connect to the MongoDB cluster 
+    app.delete("/gallery/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await galleryImagesCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    // testimonials related apis
+
+    app.get("/testimonials", async (req, res) => {
+      const result = await testimonialsCollection.find().toArray();
+      res.send(result);
+    });
+
+    // courses related apis
+
+    app.get("/courses", async (req, res) => {
+      const result = await coursesCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.get("/course/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await coursesCollection.findOne(query);
+      res.send(result);
+    });
+
+    app.post("/testimonial", async (req, res) => {
+      const testimonial = req.body;
+      console.log(testimonial);
+      const result = await testimonialsCollection.insertOne(testimonial);
+      res.send(result);
+    });
+
+    app.get("/mytestimonial", async (req, res) => {
+      const { email } = req.query;
+
+      const query = { email: email };
+     
+
+      const result = await testimonialsCollection.findOne(query);
+      console.log("mttest ", result);
+      res.send(result);
+    }); 
+
+    app.delete("/mytestimonial", async (req, res) => {
+      const { email } = req.body;
+      const query = { email: email };
+
+      const result = await testimonialsCollection.deleteOne(query);
+
+      res.send(result);
+    });
+
+    app.put("/mytestimonial", async (req, res) => {
+      const { email, updatedTestimonial } = req.body;
+
+      if (!email || !updatedTestimonial) {
+        return res
+          .status(400)
+          .json({ message: "Email and updatedTestimonial are required" });
+      }
+
+      const query = { email: email };
+      const updateDoc = {
+        $set: updatedTestimonial,
+      };
+
+      const result = await testimonialsCollection.updateOne(query, updateDoc);
+
+      if (result.matchedCount === 0) {
+        return res.status(404).json({ message: "Testimonial not found" });
+      }
+
+      res.json({ message: "Testimonial updated successfully", result });
+    });
+
+    // Connect to the MongoDB cluster
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    console.log(
+      "Pinged your deployment. You successfully connected to MongoDB!"
+    );
   } finally {
     // await client.close();
   }
