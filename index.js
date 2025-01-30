@@ -308,12 +308,13 @@ async function run() {
       res.send(result);
     }); 
 
-    app.delete("/mytestimonial", async (req, res) => {
-      const { email } = req.body;
-      const query = { email: email };
+    app.delete("/testimonial", async (req, res) => {
+      const { _id } = req.body;
+      console.log("_id in delete  ", _id);
+      const query ={ _id : new ObjectId(_id)}
 
       const result = await testimonialsCollection.deleteOne(query);
-
+      console.log("detele result  ", result);
       res.send(result);
     });
 
