@@ -201,6 +201,13 @@ async function run() {
       res.send(result);
     });
 
+    app.post('/addFaq', async(req, res) =>{
+      const addFaq = req.body
+      const result = await faqsCollection.insertOne(addFaq)
+      console.log(result)
+      res.send(result)
+   })
+
     // gallery images related apis
 
     app.get("/gallery", async (req, res) => {
