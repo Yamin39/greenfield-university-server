@@ -443,6 +443,17 @@ async function run() {
 
     // cart related apis
 
+    app.get("/cart", async (req, res) => {
+      const { email } = req.query;
+
+      const query = {
+          "user.email": email,
+        };
+
+      const result = await cartCollection.find(query).toArray();
+      res.send(result);
+    });
+
     app.post("/cart", async (req, res) => {
       const cart = req.body;
 
