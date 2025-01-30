@@ -201,6 +201,39 @@ async function run() {
       const result = await faqsCollection.find().toArray();
       res.send(result);
     });
+    app.get('/faqs/:id', async(req, res) =>{
+      const id = req.params.id
+      const query = {_id: new ObjectId(id)}
+      const result = await faqsCollection.findOne(query)
+      res.send(result)
+    })
+
+    app.post('/addFaq', async(req, res) =>{
+      const addFaq = req.body
+      const result = await faqsCollection.insertOne(addFaq)
+      console.log(result)
+      res.send(result)
+   })
+   app.patch('/updateFaq/:id', async(req, res) =>{
+    const id = req.params.id;
+    const updateFaq = req.body
+    const query = {_id: new ObjectId(id)}
+    const updateDoc = {
+      $set:{
+        title: updateFaq.title,
+        description:updateFaq.description,
+      }
+    }
+    const result = await faqsCollection.updateOne(query, updateDoc)
+    console.log(result)
+    res.send(result)
+   })
+   app.delete('/deleteFaq/:id', async(req, res) =>{
+    const id = req.params.id
+    const query = {_id: new ObjectId(id)}
+    const result = await faqsCollection.deleteOne(query)
+    res.send(result)
+   })
 
     // gallery images related apis
 
