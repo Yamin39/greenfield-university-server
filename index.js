@@ -34,6 +34,7 @@ async function run() {
     const eventsCollection = client.db("greenfieldUniversityDB").collection("events");
     const productsCollection = client.db("greenfieldUniversityDB").collection("products");
     const newsCollection = client.db("greenfieldUniversityDB").collection("news");
+    const wishlistCollection = client.db("greenfieldUniversityDB").collection("wishlist");
 
     // registration related apis
 
@@ -388,6 +389,27 @@ async function run() {
 
     app.get("/newses", async (req, res) => {
       const result = await newsCollection.find().toArray();
+      res.send(result);
+    });
+
+    // wishlist related apis
+
+    app.post("/wishlist", async (req, res) => {
+      const wishlist = req.body;
+
+      // check if user already has the product in their wishlist
+      const query = {
+        "user.email": wishlist.user.email,
+        productId: wishlist.productId,
+      };
+
+      const existingWishlist = await wishlistCollection.findOne(query);
+      
+      if (existingWishlist) {
+        return res.send({ message: "Product already in wishlist" });
+      }
+
+      const result = await wishlistCollection.insertOne(wishlist);
       res.send(result);
     });
 
