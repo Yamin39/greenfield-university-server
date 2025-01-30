@@ -22,33 +22,17 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // collections
-    const instructorsCollection = client
-      .db("greenfieldUniversityDB")
-      .collection("instructors");
-    const blogsCollection = client
-      .db("greenfieldUniversityDB")
-      .collection("blogs");
-    const announcementsCollection = client
-      .db("greenfieldUniversityDB")
-      .collection("announcements");
-    const universityIdsCollection = client
-      .db("greenfieldUniversityDB")
-      .collection("universityIds");
-    const usersCollection = client
-      .db("greenfieldUniversityDB")
-      .collection("users");
-    const faqsCollection = client
-      .db("greenfieldUniversityDB")
-      .collection("faqs");
-    const galleryImagesCollection = client
-      .db("greenfieldUniversityDB")
-      .collection("galleryImages");
-    const testimonialsCollection = client
-      .db("greenfieldUniversityDB")
-      .collection("testimonials");
-    const coursesCollection = client
-      .db("greenfieldUniversityDB")
-      .collection("courses");
+    const instructorsCollection = client.db("greenfieldUniversityDB").collection("instructors");
+    const blogsCollection = client.db("greenfieldUniversityDB").collection("blogs");
+    const announcementsCollection = client.db("greenfieldUniversityDB").collection("announcements");
+    const universityIdsCollection = client.db("greenfieldUniversityDB").collection("universityIds");
+    const usersCollection = client.db("greenfieldUniversityDB").collection("users");
+    const faqsCollection = client.db("greenfieldUniversityDB").collection("faqs");
+    const galleryImagesCollection = client.db("greenfieldUniversityDB").collection("galleryImages");
+    const testimonialsCollection = client.db("greenfieldUniversityDB").collection("testimonials");
+    const coursesCollection = client.db("greenfieldUniversityDB").collection("courses");
+    const eventsCollection = client.db("greenfieldUniversityDB").collection("events");
+    const productsCollection = client.db("greenfieldUniversityDB").collection("products");
 
     // registration related apis
 
@@ -161,15 +145,21 @@ async function run() {
       const id = req.params.id;
       const blog = req.body;
       console.log(blog);
-      const query = { _id: new ObjectId(id) };
-      const updateDoc = {
-        $set: {
-          ...blog,
-        },
-      };
-      const result = await blogsCollection.updateOne(query, updateDoc);
-      res.send(result);
-    });
+      const query = {_id : new ObjectId(id)}
+      const updatedDoc = {
+        $set : {
+          title : blog.title,
+          description : blog.description,
+          thumbnail : blog.thumbnail,
+          timestamp : blog.timestamp,
+          tags : blog.tags,
+          category : blog.category,
+          "author.role" : blog.author.role
+        }
+      }
+      const result = await blogsCollection.updateOne(query, updatedDoc)
+      res.send(result)
+    })
 
     // announcements related apis
 
@@ -197,6 +187,22 @@ async function run() {
       const result = await announcementsCollection.deleteOne(query);
       res.send(result);
     });
+
+    app.patch('/announcement/:id', async(req, res) =>{
+      const id = req.params.id;
+      const announcement = req.body;
+      const query = {_id : new ObjectId(id)}
+      const updatedDoc = {
+        $set : {
+          title : announcement.title,
+          timestamp : announcement.timestamp,
+          description : announcement.description
+        }
+      }
+
+      const result = await announcementsCollection.updateOne(query, updatedDoc)
+      res.send(result)
+    })
 
     // faqs related apis
 
@@ -300,6 +306,28 @@ async function run() {
     });
 
     // Connect to the MongoDB cluster
+
+    // events related apis
+
+    app.get("/events", async (req, res) => {
+      const result = await eventsCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.get("/event/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await eventsCollection.findOne(query);
+      console.log(result);
+      res.send(result);
+    });
+
+    // products related apis
+
+    app.get("/products", async (req, res) => {
+      const result = await productsCollection.find().toArray();
+      res.send(result);
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
