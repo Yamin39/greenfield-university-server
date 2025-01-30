@@ -480,6 +480,21 @@ async function run() {
       res.send(result);
     });
 
+    // update cart quantity
+
+    app.patch("/cart/:id", async (req, res) => {
+      const id = req.params.id;
+      const updatedCart = req.body;
+
+      const query = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          quantity: updatedCart.quantity,
+        },
+      };
+      const result = await cartCollection.updateOne(query, updateDoc);
+      res.send(result);
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
