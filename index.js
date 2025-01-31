@@ -301,6 +301,37 @@ async function run() {
       const result = await productsCollection.insertOne(product);
       res.send(result)
     })
+    app.get('/product/:id', async(req, res) =>{
+      const id = req.params.id
+      const query = {_id: new ObjectId(id)}
+      const result = await productsCollection.findOne(query)
+      res.send(result)
+    })
+    app.patch('/updateProduct/:id', async(req, res) =>{
+      const id = req.params.id;
+      const updateProduct = req.body
+      const query = {_id: new ObjectId(id)}
+      const updateDoc = {
+        $set:{
+          name: updateProduct.name,
+          category: updateProduct.category,
+          pic: updateProduct.pic,
+          price: updateProduct.price,
+          discount: updateProduct.discount,
+          desc:updateProduct.desc,
+          timestamp:updateProduct.timestamp
+        }
+      }
+      const result = await productsCollection.updateOne(query, updateDoc)
+      console.log(result)
+      res.send(result)
+     })
+     app.delete('/product/:id', async(req, res) =>{
+      const id = req.params.id
+      const query = {_id:new ObjectId(id)}
+      const result = await productsCollection.deleteOne(query)
+      res.send(result)
+     } )
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
