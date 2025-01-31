@@ -90,6 +90,14 @@ async function run() {
     // instructor related apis
 
     app.get("/instructors", async (req, res) => {
+      const {email} = req.query;
+      
+      if(email){
+        const query = {email: email}
+        const result = await instructorsCollection.findOne(query)
+        return res.send(result)
+      }
+
       const result = await instructorsCollection.find().toArray();
       res.send(result);
     });
