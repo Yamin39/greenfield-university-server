@@ -296,6 +296,11 @@ async function run() {
       const result = await productsCollection.find().toArray();
       res.send(result);
     });
+    app.post('/product', async(req, res) =>{
+      const product = req.body;
+      const result = await productsCollection.insertOne(product);
+      res.send(result)
+    })
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
