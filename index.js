@@ -109,6 +109,17 @@ async function run() {
       res.send(result);
     });
 
+    app.patch("/instructor/:email", async (req, res) => {
+      const email = req.params.email;
+      const instructor = req.body;
+      const query = { email: email };
+      const updateDoc = {
+        $set: instructor,
+      };
+      const result = await instructorsCollection.updateOne(query, updateDoc);
+      res.send(result);
+    });
+
     // blogs related apis
 
     app.get("/blogs", async (req, res) => {
