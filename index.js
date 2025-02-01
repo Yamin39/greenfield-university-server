@@ -355,6 +355,13 @@ async function run() {
       res.send(result)
     })
 
+    app.delete('/course/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await coursesCollection.deleteOne(query);
+      res.send(result)
+    })
+
     // testimonials related api.
 
     app.post("/testimonial", async (req, res) => {
