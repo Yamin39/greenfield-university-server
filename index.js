@@ -156,6 +156,18 @@ async function run() {
     // blogs related apis
 
     app.get("/blogs", async (req, res) => {
+      const { email, role } = req.query;
+
+      // return
+      if (role === "admin") {
+        const result = await blogsCollection.find().toArray();
+        return res.send(result);
+      } else if (email) { 
+        const query = { "author.email": email };
+        const result = await blogsCollection.find(query).toArray();
+        return res.send(result);
+      }
+
       const result = await blogsCollection.find().toArray();
       res.send(result);
     });
