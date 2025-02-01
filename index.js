@@ -99,7 +99,7 @@ async function run() {
     });
 
     // users related apis
-    
+
     app.get("/users", async (req, res) => {
       const email = req.query.email;
       const query = { email: email };
@@ -121,10 +121,10 @@ async function run() {
     // instructor related apis
 
     app.get("/instructors", async (req, res) => {
-      const {email} = req.query;
-      
-      if(email){
-        const query = {email: email}
+      const { email } = req.query;
+
+      if (email) {
+        const query = { email: email }
         const result = await instructorsCollection.findOne(query)
         return res.send(result)
       }
@@ -198,16 +198,16 @@ async function run() {
       const id = req.params.id;
       const blog = req.body;
       console.log(blog);
-      const query = {_id : new ObjectId(id)}
+      const query = { _id: new ObjectId(id) }
       const updatedDoc = {
-        $set : {
-          title : blog.title,
-          description : blog.description,
-          thumbnail : blog.thumbnail,
-          timestamp : blog.timestamp,
-          tags : blog.tags,
-          category : blog.category,
-          "author.role" : blog.author.role
+        $set: {
+          title: blog.title,
+          description: blog.description,
+          thumbnail: blog.thumbnail,
+          timestamp: blog.timestamp,
+          tags: blog.tags,
+          category: blog.category,
+          "author.role": blog.author.role
         }
       }
       const result = await blogsCollection.updateOne(query, updatedDoc)
@@ -241,15 +241,15 @@ async function run() {
       res.send(result);
     });
 
-    app.patch('/announcement/:id', async(req, res) =>{
+    app.patch('/announcement/:id', async (req, res) => {
       const id = req.params.id;
       const announcement = req.body;
-      const query = {_id : new ObjectId(id)}
+      const query = { _id: new ObjectId(id) }
       const updatedDoc = {
-        $set : {
-          title : announcement.title,
-          timestamp : announcement.timestamp,
-          description : announcement.description
+        $set: {
+          title: announcement.title,
+          timestamp: announcement.timestamp,
+          description: announcement.description
         }
       }
 
@@ -263,39 +263,39 @@ async function run() {
       const result = await faqsCollection.find().toArray();
       res.send(result);
     });
-    app.get('/faqs/:id', async(req, res) =>{
+    app.get('/faqs/:id', async (req, res) => {
       const id = req.params.id
-      const query = {_id: new ObjectId(id)}
+      const query = { _id: new ObjectId(id) }
       const result = await faqsCollection.findOne(query)
       res.send(result)
     })
 
-    app.post('/addFaq', async(req, res) =>{
+    app.post('/addFaq', async (req, res) => {
       const addFaq = req.body
       const result = await faqsCollection.insertOne(addFaq)
       console.log(result)
       res.send(result)
-   })
-   app.patch('/updateFaq/:id', async(req, res) =>{
-    const id = req.params.id;
-    const updateFaq = req.body
-    const query = {_id: new ObjectId(id)}
-    const updateDoc = {
-      $set:{
-        title: updateFaq.title,
-        description:updateFaq.description,
+    })
+    app.patch('/updateFaq/:id', async (req, res) => {
+      const id = req.params.id;
+      const updateFaq = req.body
+      const query = { _id: new ObjectId(id) }
+      const updateDoc = {
+        $set: {
+          title: updateFaq.title,
+          description: updateFaq.description,
+        }
       }
-    }
-    const result = await faqsCollection.updateOne(query, updateDoc)
-    console.log(result)
-    res.send(result)
-   })
-   app.delete('/deleteFaq/:id', async(req, res) =>{
-    const id = req.params.id
-    const query = {_id: new ObjectId(id)}
-    const result = await faqsCollection.deleteOne(query)
-    res.send(result)
-   })
+      const result = await faqsCollection.updateOne(query, updateDoc)
+      console.log(result)
+      res.send(result)
+    })
+    app.delete('/deleteFaq/:id', async (req, res) => {
+      const id = req.params.id
+      const query = { _id: new ObjectId(id) }
+      const result = await faqsCollection.deleteOne(query)
+      res.send(result)
+    })
 
     // gallery images related apis
 
@@ -334,6 +334,13 @@ async function run() {
       res.send(result);
     });
 
+    app.get('/userCourses', async (req, res) => {
+      const email = req.query.email;
+      const query = { "instructorDetails.email": email }
+      const result = await coursesCollection.find(query).toArray();
+      res.send(result)
+    })
+
     app.get("/course/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
@@ -341,8 +348,9 @@ async function run() {
       res.send(result);
     });
 
-    app.post('/course', async(req, res) =>{
+    app.post('/course', async (req, res) => {
       const course = req.body;
+      console.log(course);
       const result = await coursesCollection.insertOne(course);
       res.send(result)
     })
@@ -360,17 +368,17 @@ async function run() {
       const { email } = req.query;
 
       const query = { email: email };
-     
+
 
       const result = await testimonialsCollection.findOne(query);
       console.log("mttest ", result);
       res.send(result);
-    }); 
+    });
 
     app.delete("/testimonial", async (req, res) => {
       const { _id } = req.body;
       console.log("_id in delete  ", _id);
-      const query ={ _id : new ObjectId(_id)}
+      const query = { _id: new ObjectId(_id) }
 
       const result = await testimonialsCollection.deleteOne(query);
       console.log("detele result  ", result);
@@ -423,42 +431,42 @@ async function run() {
       const result = await productsCollection.find().toArray();
       res.send(result);
     });
-    app.post('/product', async(req, res) =>{
+    app.post('/product', async (req, res) => {
       const product = req.body;
       const result = await productsCollection.insertOne(product);
       res.send(result)
     })
-    app.get('/product/:id', async(req, res) =>{
+    app.get('/product/:id', async (req, res) => {
       const id = req.params.id
-      const query = {_id: new ObjectId(id)}
+      const query = { _id: new ObjectId(id) }
       const result = await productsCollection.findOne(query)
       res.send(result)
     })
-    app.patch('/updateProduct/:id', async(req, res) =>{
+    app.patch('/updateProduct/:id', async (req, res) => {
       const id = req.params.id;
       const updateProduct = req.body
-      const query = {_id: new ObjectId(id)}
+      const query = { _id: new ObjectId(id) }
       const updateDoc = {
-        $set:{
+        $set: {
           name: updateProduct.name,
           category: updateProduct.category,
           pic: updateProduct.pic,
           price: updateProduct.price,
           discount: updateProduct.discount,
-          desc:updateProduct.desc,
-          timestamp:updateProduct.timestamp
+          desc: updateProduct.desc,
+          timestamp: updateProduct.timestamp
         }
       }
       const result = await productsCollection.updateOne(query, updateDoc)
       console.log(result)
       res.send(result)
-     })
-     app.delete('/product/:id', async(req, res) =>{
+    })
+    app.delete('/product/:id', async (req, res) => {
       const id = req.params.id
-      const query = {_id:new ObjectId(id)}
+      const query = { _id: new ObjectId(id) }
       const result = await productsCollection.deleteOne(query)
       res.send(result)
-     } )
+    })
 
     app.get("/product/:id", async (req, res) => {
       const id = req.params.id;
@@ -520,7 +528,7 @@ async function run() {
       };
 
       const existingWishlist = await wishlistCollection.findOne(query);
-      
+
       if (existingWishlist) {
         return res.send({ message: "Product already in wishlist" });
       }
@@ -542,8 +550,8 @@ async function run() {
       const { email } = req.query;
 
       const query = {
-          "user.email": email,
-        };
+        "user.email": email,
+      };
 
       const result = await cartCollection.find(query).toArray();
       res.send(result);
