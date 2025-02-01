@@ -586,6 +586,11 @@ async function run() {
 
     // contact related apis
 
+    app.get("/contact", async (req, res) => {
+      const result = await contactCollection.find().toArray();
+      res.send(result);
+    });
+
     app.post("/contact", async (req, res) => {
       const contact = req.body;
       const result = await contactCollection.insertOne(contact);
