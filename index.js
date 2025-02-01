@@ -618,6 +618,34 @@ async function run() {
       res.send(result);
     });
 
+    app.patch("/query/upvote/add/:id", async (req, res) => {
+      const id = req.params.id;
+      const { email } = req.body;
+
+      const query = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $push: {
+          upVotes: email,
+        },
+      };
+      const result = await queryCollection.updateOne(query, updateDoc);
+      res.send(result);
+    });
+
+    app.patch("/query/upvote/remove/:id", async (req, res) => {
+      const id = req.params.id;
+      const { email } = req.body;
+
+      const query = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $pull: {
+          upVotes: email,
+        },
+      };
+      const result = await queryCollection.updateOne(query, updateDoc);
+      res.send(result);
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
