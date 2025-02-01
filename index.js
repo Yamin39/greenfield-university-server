@@ -805,10 +805,30 @@ async function run() {
       const id = req.params.id;
       const { commentId, reply } = req.body;
 
+      // add a unique id to the reply
+      reply._id = new ObjectId();
+
       const query = { _id: new ObjectId(id), "comments._id": new ObjectId(commentId) };
       const updateDoc = {
         $push: {
           "comments.$.replies": reply,
+        },
+      };
+      const result = await queryCollection.updateOne(query, updateDoc);
+      res.send(result);
+    });
+
+    // delete a reply from a comment in a query
+    app.patch("/query/comment/reply/remove/:id", async (req, res) => {
+      const id = req.params.id;
+      const { commentId, replyId } = req.body;
+
+      const query = { _id: new ObjectId(id), "comments._id": new ObjectId(commentId) };
+      const updateDoc = {
+        $pull: {
+          "comments.$.replies": {
+            _id: new ObjectId(replyId),
+          },
         },
       };
       const result = await queryCollection.updateOne(query, updateDoc);
