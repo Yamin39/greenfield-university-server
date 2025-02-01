@@ -134,6 +134,13 @@ async function run() {
       }
     });
 
+    // registered students
+
+    app.get("/students", async (req, res) => {
+      const result = await usersCollection.find({ role: "Student" }).toArray();
+      res.send(result);
+    });
+
     // users related apis
 
     app.get("/users", async (req, res) => {
