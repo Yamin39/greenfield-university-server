@@ -835,6 +835,30 @@ async function run() {
       res.send(result);
     });
 
+    // like a reply to a comment in a query
+    app.patch("/query/comment/reply/like/add/:id", async (req, res) => {
+      const id = req.params.id;
+      const { commentId, replyId, email } = req.body;
+      
+      const query = { _id: new ObjectId(id) };
+      
+      const updateDoc = {
+          $push: {
+              "comments.$[comment].replies.$[reply].likes": email
+          }
+      };
+  
+      const options = {
+          arrayFilters: [
+              { "comment._id": new ObjectId(commentId) },
+              { "reply._id": new ObjectId(replyId) }
+          ]
+      };
+  
+      const result = await queryCollection.updateOne(query, updateDoc, options);
+      res.send(result);
+    });
+
     // stripe payment related apis
 
     const stripeInstance = new Stripe(process.env.STRIPE_KEY);
