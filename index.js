@@ -87,6 +87,15 @@ async function run() {
       }
     });
 
+    // users related apis
+    
+    app.get("/users", async (req, res) => {
+      const email = req.query.email;
+      const query = { email: email };
+      const result = await usersCollection.findOne(query);
+      res.send(result);
+    });
+
     // instructor related apis
 
     app.get("/instructors", async (req, res) => {
