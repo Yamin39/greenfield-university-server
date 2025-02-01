@@ -37,6 +37,7 @@ async function run() {
     const wishlistCollection = client.db("greenfieldUniversityDB").collection("wishlist");
     const cartCollection = client.db("greenfieldUniversityDB").collection("cart");
     const contactCollection = client.db("greenfieldUniversityDB").collection("contact");
+    const queryCollection = client.db("greenfieldUniversityDB").collection("query");
 
     // registration related apis
 
@@ -601,6 +602,47 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await contactCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    // query related apis
+
+    app.get("/queries", async (req, res) => {
+      const result = await queryCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.post("/query", async (req, res) => {
+      const query = req.body;
+      const result = await queryCollection.insertOne(query);
+      res.send(result);
+    });
+
+    app.patch("/query/upvote/add/:id", async (req, res) => {
+      const id = req.params.id;
+      const { email } = req.body;
+
+      const query = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $push: {
+          upVotes: email,
+        },
+      };
+      const result = await queryCollection.updateOne(query, updateDoc);
+      res.send(result);
+    });
+
+    app.patch("/query/upvote/remove/:id", async (req, res) => {
+      const id = req.params.id;
+      const { email } = req.body;
+
+      const query = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $pull: {
+          upVotes: email,
+        },
+      };
+      const result = await queryCollection.updateOne(query, updateDoc);
       res.send(result);
     });
 
