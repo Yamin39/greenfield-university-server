@@ -607,6 +607,11 @@ async function run() {
 
     // query related apis
 
+    app.get("/queries", async (req, res) => {
+      const result = await queryCollection.find().toArray();
+      res.send(result);
+    });
+
     app.post("/query", async (req, res) => {
       const query = req.body;
       const result = await queryCollection.insertOne(query);
