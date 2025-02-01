@@ -858,6 +858,31 @@ async function run() {
       const result = await queryCollection.updateOne(query, updateDoc, options);
       res.send(result);
     });
+  
+
+    // unlike a reply to a comment in a query
+    app.patch("/query/comment/reply/like/remove/:id", async (req, res) => {
+      const id = req.params.id;
+      const { commentId, replyId, email } = req.body;
+      
+      const query = { _id: new ObjectId(id) };
+      
+      const updateDoc = {
+          $pull: {
+              "comments.$[comment].replies.$[reply].likes": email
+          }
+      };
+  
+      const options = {
+          arrayFilters: [
+              { "comment._id": new ObjectId(commentId) },
+              { "reply._id": new ObjectId(replyId) }
+          ]
+      };
+  
+      const result = await queryCollection.updateOne(query, updateDoc, options);
+      res.send(result);
+    });
 
     // stripe payment related apis
 
