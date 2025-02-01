@@ -87,6 +87,17 @@ async function run() {
       }
     });
 
+    // get role
+    app.get("/auth/role", async (req, res) => {
+      const { email } = req.query;
+      const user = await usersCollection.findOne({ email });
+      if (user) {
+        res.send({ role: user.role.toLowerCase() });
+      } else {
+        res.send({ role: null });
+      }
+    });
+
     // users related apis
     
     app.get("/users", async (req, res) => {
