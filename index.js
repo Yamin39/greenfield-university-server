@@ -36,6 +36,7 @@ async function run() {
     const newsCollection = client.db("greenfieldUniversityDB").collection("news");
     const wishlistCollection = client.db("greenfieldUniversityDB").collection("wishlist");
     const cartCollection = client.db("greenfieldUniversityDB").collection("cart");
+    const contactCollection = client.db("greenfieldUniversityDB").collection("contact");
 
     // registration related apis
 
@@ -580,6 +581,14 @@ async function run() {
         },
       };
       const result = await cartCollection.updateOne(query, updateDoc);
+      res.send(result);
+    });
+
+    // contact related apis
+
+    app.post("/contact", async (req, res) => {
+      const contact = req.body;
+      const result = await contactCollection.insertOne(contact);
       res.send(result);
     });
 
