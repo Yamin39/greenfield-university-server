@@ -71,6 +71,7 @@ async function run() {
     const queryCollection = client
       .db("greenfieldUniversityDB")
       .collection("query");
+    const paidCart = client.db("greenfieldUniversityDB").collection("paidCart");
 
     // registration related apis
 
@@ -577,7 +578,7 @@ async function run() {
 
     app.post("/cart", async (req, res) => {
       const cart = req.body;
-
+      console.log(cart);
       // check if user already has the product in their cart
       const query = {
         "user.email": cart.user.email,
@@ -608,6 +609,10 @@ async function run() {
       const query = {
         "user.email": email,
       };
+
+      const allPaidcart = await cartCollection.find(query).toArray();
+
+      const paidCollection = await paidCart.insertMany(allPaidcart);
 
       const result = await cartCollection.deleteMany(query);
       res.send(result);
@@ -712,6 +717,35 @@ async function run() {
       });
     });
 
+
+    // paid cart related apis
+    //all for admin 
+    app.get("/paidCart", async (req, res) => {
+      const result = await paidCart.find().toArray();
+      res.send(result);
+    });
+
+    app.post("/UserpaidCart", async (req, res) => {
+      const { email } = req.body; // Extract email from the request body
+      console.log("email", email);
+  
+      if (!email) {
+          return res.status(400).send({ error: "Email is required" });
+      }
+  
+      const query = {
+          "user.email": email,
+      };
+      console.log("query", query);
+  
+      try {
+          const result = await paidCart.find(query).toArray();
+          res.send(result);
+      } catch (error) {
+          console.error("Error fetching purchased books:", error);
+          res.status(500).send({ error: "Internal server error" });
+      }
+  });
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
