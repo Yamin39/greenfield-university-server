@@ -8,6 +8,7 @@ app.use(cors());
 app.use(express.json());
 
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+const { default: Stripe } = require("stripe");
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.6fu63x8.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
@@ -645,6 +646,30 @@ async function run() {
       const result = await queryCollection.updateOne(query, updateDoc);
       res.send(result);
     });
+
+const stripeInstance = new Stripe(process.env.STRIPE_KEY);
+
+app.post("/paymentStripe", async (req, res) => {
+  const { price } = req.body;
+  console.log("Price:", price);
+
+  const amount = parseInt(price * 100);
+
+  console.log("Amount:", amount);
+
+  const paymentIntent = await stripeInstance.paymentIntents.create({
+    amount: amount,
+    currency: "usd",
+    payment_method_types: ["card"],
+  });
+  console.log("PaymentIntent:", paymentIntent.client_secret);
+
+  res.send({
+    clientSecret: paymentIntent.client_secret,
+  });
+});
+
+
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
