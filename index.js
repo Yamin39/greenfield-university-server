@@ -34,6 +34,9 @@ async function run() {
     const eventsCollection = client.db("greenfieldUniversityDB").collection("events");
     const productsCollection = client.db("greenfieldUniversityDB").collection("products");
     const newsCollection = client.db("greenfieldUniversityDB").collection("news");
+    const wishlistCollection = client.db("greenfieldUniversityDB").collection("wishlist");
+    const cartCollection = client.db("greenfieldUniversityDB").collection("cart");
+    const contactCollection = client.db("greenfieldUniversityDB").collection("contact");
 
     // registration related apis
 
@@ -85,9 +88,48 @@ async function run() {
       }
     });
 
+    // get role
+    app.get("/auth/role", async (req, res) => {
+      const { email } = req.query;
+      const user = await usersCollection.findOne({ email });
+      if (user) {
+        res.send({ role: user.role.toLowerCase() });
+      } else {
+        res.send({ role: null });
+      }
+    });
+
+    // users related apis
+    
+    app.get("/users", async (req, res) => {
+      const email = req.query.email;
+      const query = { email: email };
+      const result = await usersCollection.findOne(query);
+      res.send(result);
+    });
+
+    app.patch("/users/:email", async (req, res) => {
+      const email = req.params.email;
+      const user = req.body;
+      const query = { email: email };
+      const updateDoc = {
+        $set: user,
+      };
+      const result = await usersCollection.updateOne(query, updateDoc);
+      res.send(result);
+    });
+
     // instructor related apis
 
     app.get("/instructors", async (req, res) => {
+      const {email} = req.query;
+      
+      if(email){
+        const query = {email: email}
+        const result = await instructorsCollection.findOne(query)
+        return res.send(result)
+      }
+
       const result = await instructorsCollection.find().toArray();
       res.send(result);
     });
@@ -96,6 +138,17 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await instructorsCollection.findOne(query);
+      res.send(result);
+    });
+
+    app.patch("/instructor/:email", async (req, res) => {
+      const email = req.params.email;
+      const instructor = req.body;
+      const query = { email: email };
+      const updateDoc = {
+        $set: instructor,
+      };
+      const result = await instructorsCollection.updateOne(query, updateDoc);
       res.send(result);
     });
 
@@ -307,12 +360,13 @@ async function run() {
       res.send(result);
     }); 
 
-    app.delete("/mytestimonial", async (req, res) => {
-      const { email } = req.body;
-      const query = { email: email };
+    app.delete("/testimonial", async (req, res) => {
+      const { _id } = req.body;
+      console.log("_id in delete  ", _id);
+      const query ={ _id : new ObjectId(_id)}
 
       const result = await testimonialsCollection.deleteOne(query);
-
+      console.log("detele result  ", result);
       res.send(result);
     });
 
@@ -362,6 +416,42 @@ async function run() {
       const result = await productsCollection.find().toArray();
       res.send(result);
     });
+    app.post('/product', async(req, res) =>{
+      const product = req.body;
+      const result = await productsCollection.insertOne(product);
+      res.send(result)
+    })
+    app.get('/product/:id', async(req, res) =>{
+      const id = req.params.id
+      const query = {_id: new ObjectId(id)}
+      const result = await productsCollection.findOne(query)
+      res.send(result)
+    })
+    app.patch('/updateProduct/:id', async(req, res) =>{
+      const id = req.params.id;
+      const updateProduct = req.body
+      const query = {_id: new ObjectId(id)}
+      const updateDoc = {
+        $set:{
+          name: updateProduct.name,
+          category: updateProduct.category,
+          pic: updateProduct.pic,
+          price: updateProduct.price,
+          discount: updateProduct.discount,
+          desc:updateProduct.desc,
+          timestamp:updateProduct.timestamp
+        }
+      }
+      const result = await productsCollection.updateOne(query, updateDoc)
+      console.log(result)
+      res.send(result)
+     })
+     app.delete('/product/:id', async(req, res) =>{
+      const id = req.params.id
+      const query = {_id:new ObjectId(id)}
+      const result = await productsCollection.deleteOne(query)
+      res.send(result)
+     } )
 
     app.get("/product/:id", async (req, res) => {
       const id = req.params.id;
@@ -388,6 +478,129 @@ async function run() {
 
     app.get("/newses", async (req, res) => {
       const result = await newsCollection.find().toArray();
+      res.send(result);
+    });
+
+    // wishlist related apis
+
+    app.get("/wishlist", async (req, res) => {
+      const { email, productId } = req.query;
+
+      let query = {};
+
+      if (productId) {
+        query = {
+          "user.email": email,
+          productId: productId,
+        };
+      } else {
+        query = {
+          "user.email": email,
+        };
+      }
+
+      const result = await wishlistCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.post("/wishlist", async (req, res) => {
+      const wishlist = req.body;
+
+      // check if user already has the product in their wishlist
+      const query = {
+        "user.email": wishlist.user.email,
+        productId: wishlist.productId,
+      };
+
+      const existingWishlist = await wishlistCollection.findOne(query);
+      
+      if (existingWishlist) {
+        return res.send({ message: "Product already in wishlist" });
+      }
+
+      const result = await wishlistCollection.insertOne(wishlist);
+      res.send(result);
+    });
+
+    app.delete("/wishlist/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await wishlistCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    // cart related apis
+
+    app.get("/cart", async (req, res) => {
+      const { email } = req.query;
+
+      const query = {
+          "user.email": email,
+        };
+
+      const result = await cartCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.post("/cart", async (req, res) => {
+      const cart = req.body;
+
+      // check if user already has the product in their cart
+      const query = {
+        "user.email": cart.user.email,
+        productId: cart.productId,
+      };
+
+      const existingCart = await cartCollection.findOne(query);
+
+      if (existingCart) {
+        return res.send({ message: "Product already in cart" });
+      }
+
+      const result = await cartCollection.insertOne(cart);
+      res.send(result);
+    });
+
+    app.delete("/cart/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await cartCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    // update cart quantity
+
+    app.patch("/cart/:id", async (req, res) => {
+      const id = req.params.id;
+      const updatedCart = req.body;
+
+      const query = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          quantity: updatedCart.quantity,
+        },
+      };
+      const result = await cartCollection.updateOne(query, updateDoc);
+      res.send(result);
+    });
+
+    // contact related apis
+
+    app.get("/contact", async (req, res) => {
+      const result = await contactCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.post("/contact", async (req, res) => {
+      const contact = req.body;
+      const result = await contactCollection.insertOne(contact);
+      res.send(result);
+    });
+
+    app.delete("/contact/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await contactCollection.deleteOne(query);
       res.send(result);
     });
 
