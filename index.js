@@ -688,6 +688,36 @@ async function run() {
       res.send(result);
     });
 
+    // like a comment
+    app.patch("/query/comment/like/add/:id", async (req, res) => {
+      const id = req.params.id;
+      const { commentId, email } = req.body;
+
+      const query = { _id: new ObjectId(id), "comments._id": new ObjectId(commentId) };
+      const updateDoc = {
+        $push: {
+          "comments.$.likes": email,
+        },
+      };
+      const result = await queryCollection.updateOne(query, updateDoc);
+      res.send(result);
+    });
+
+    // unlike a comment
+    app.patch("/query/comment/like/remove/:id", async (req, res) => {
+      const id = req.params.id;
+      const { commentId, email } = req.body;
+
+      const query = { _id: new ObjectId(id), "comments._id": new ObjectId(commentId) };
+      const updateDoc = {
+        $pull: {
+          "comments.$.likes": email,
+        },
+      };
+      const result = await queryCollection.updateOne(query, updateDoc);
+      res.send(result);
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
