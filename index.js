@@ -800,6 +800,23 @@ async function run() {
       res.send(result);
     });
 
+    // add a reply to a comment in a query
+    app.patch("/query/comment/reply/add/:id", async (req, res) => {
+      const id = req.params.id;
+      const { commentId, reply } = req.body;
+
+      const query = { _id: new ObjectId(id), "comments._id": new ObjectId(commentId) };
+      const updateDoc = {
+        $push: {
+          "comments.$.replies": reply,
+        },
+      };
+      const result = await queryCollection.updateOne(query, updateDoc);
+      res.send(result);
+    });
+
+    // stripe payment related apis
+
     const stripeInstance = new Stripe(process.env.STRIPE_KEY);
 
     app.post("/paymentStripe", async (req, res) => {
