@@ -8,6 +8,7 @@ app.use(cors());
 app.use(express.json());
 
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+const { default: Stripe } = require("stripe");
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.6fu63x8.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
@@ -22,20 +23,55 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // collections
-    const instructorsCollection = client.db("greenfieldUniversityDB").collection("instructors");
-    const blogsCollection = client.db("greenfieldUniversityDB").collection("blogs");
-    const announcementsCollection = client.db("greenfieldUniversityDB").collection("announcements");
-    const universityIdsCollection = client.db("greenfieldUniversityDB").collection("universityIds");
-    const usersCollection = client.db("greenfieldUniversityDB").collection("users");
-    const faqsCollection = client.db("greenfieldUniversityDB").collection("faqs");
-    const galleryImagesCollection = client.db("greenfieldUniversityDB").collection("galleryImages");
-    const testimonialsCollection = client.db("greenfieldUniversityDB").collection("testimonials");
-    const coursesCollection = client.db("greenfieldUniversityDB").collection("courses");
-    const eventsCollection = client.db("greenfieldUniversityDB").collection("events");
-    const productsCollection = client.db("greenfieldUniversityDB").collection("products");
-    const newsCollection = client.db("greenfieldUniversityDB").collection("news");
-    const wishlistCollection = client.db("greenfieldUniversityDB").collection("wishlist");
-    const cartCollection = client.db("greenfieldUniversityDB").collection("cart");
+    const instructorsCollection = client
+      .db("greenfieldUniversityDB")
+      .collection("instructors");
+    const blogsCollection = client
+      .db("greenfieldUniversityDB")
+      .collection("blogs");
+    const announcementsCollection = client
+      .db("greenfieldUniversityDB")
+      .collection("announcements");
+    const universityIdsCollection = client
+      .db("greenfieldUniversityDB")
+      .collection("universityIds");
+    const usersCollection = client
+      .db("greenfieldUniversityDB")
+      .collection("users");
+    const faqsCollection = client
+      .db("greenfieldUniversityDB")
+      .collection("faqs");
+    const galleryImagesCollection = client
+      .db("greenfieldUniversityDB")
+      .collection("galleryImages");
+    const testimonialsCollection = client
+      .db("greenfieldUniversityDB")
+      .collection("testimonials");
+    const coursesCollection = client
+      .db("greenfieldUniversityDB")
+      .collection("courses");
+    const eventsCollection = client
+      .db("greenfieldUniversityDB")
+      .collection("events");
+    const productsCollection = client
+      .db("greenfieldUniversityDB")
+      .collection("products");
+    const newsCollection = client
+      .db("greenfieldUniversityDB")
+      .collection("news");
+    const wishlistCollection = client
+      .db("greenfieldUniversityDB")
+      .collection("wishlist");
+    const cartCollection = client
+      .db("greenfieldUniversityDB")
+      .collection("cart");
+    const contactCollection = client
+      .db("greenfieldUniversityDB")
+      .collection("contact");
+    const queryCollection = client
+      .db("greenfieldUniversityDB")
+      .collection("query");
+    const paidCart = client.db("greenfieldUniversityDB").collection("paidCart");
 
     // registration related apis
 
@@ -124,9 +160,9 @@ async function run() {
       const { email } = req.query;
 
       if (email) {
-        const query = { email: email }
-        const result = await instructorsCollection.findOne(query)
-        return res.send(result)
+        const query = { email: email };
+        const result = await instructorsCollection.findOne(query);
+        return res.send(result);
       }
 
       const result = await instructorsCollection.find().toArray();
@@ -154,6 +190,18 @@ async function run() {
     // blogs related apis
 
     app.get("/blogs", async (req, res) => {
+      const { email, role } = req.query;
+
+      // return
+      if (role === "admin") {
+        const result = await blogsCollection.find().toArray();
+        return res.send(result);
+      } else if (email) { 
+        const query = { "author.email": email };
+        const result = await blogsCollection.find(query).toArray();
+        return res.send(result);
+      }
+
       const result = await blogsCollection.find().toArray();
       res.send(result);
     });
@@ -198,7 +246,7 @@ async function run() {
       const id = req.params.id;
       const blog = req.body;
       console.log(blog);
-      const query = { _id: new ObjectId(id) }
+      const query = { _id: new ObjectId(id) };
       const updatedDoc = {
         $set: {
           title: blog.title,
@@ -207,12 +255,12 @@ async function run() {
           timestamp: blog.timestamp,
           tags: blog.tags,
           category: blog.category,
-          "author.role": blog.author.role
-        }
-      }
-      const result = await blogsCollection.updateOne(query, updatedDoc)
-      res.send(result)
-    })
+          "author.role": blog.author.role,
+        },
+      };
+      const result = await blogsCollection.updateOne(query, updatedDoc);
+      res.send(result);
+    });
 
     // announcements related apis
 
@@ -241,21 +289,21 @@ async function run() {
       res.send(result);
     });
 
-    app.patch('/announcement/:id', async (req, res) => {
+    app.patch("/announcement/:id", async (req, res) => {
       const id = req.params.id;
       const announcement = req.body;
-      const query = { _id: new ObjectId(id) }
+      const query = { _id: new ObjectId(id) };
       const updatedDoc = {
         $set: {
           title: announcement.title,
           timestamp: announcement.timestamp,
-          description: announcement.description
-        }
-      }
+          description: announcement.description,
+        },
+      };
 
-      const result = await announcementsCollection.updateOne(query, updatedDoc)
-      res.send(result)
-    })
+      const result = await announcementsCollection.updateOne(query, updatedDoc);
+      res.send(result);
+    });
 
     // faqs related apis
 
@@ -263,39 +311,39 @@ async function run() {
       const result = await faqsCollection.find().toArray();
       res.send(result);
     });
-    app.get('/faqs/:id', async (req, res) => {
-      const id = req.params.id
-      const query = { _id: new ObjectId(id) }
-      const result = await faqsCollection.findOne(query)
-      res.send(result)
-    })
-
-    app.post('/addFaq', async (req, res) => {
-      const addFaq = req.body
-      const result = await faqsCollection.insertOne(addFaq)
-      console.log(result)
-      res.send(result)
-    })
-    app.patch('/updateFaq/:id', async (req, res) => {
+    app.get("/faqs/:id", async (req, res) => {
       const id = req.params.id;
-      const updateFaq = req.body
-      const query = { _id: new ObjectId(id) }
+      const query = { _id: new ObjectId(id) };
+      const result = await faqsCollection.findOne(query);
+      res.send(result);
+    });
+
+    app.post("/addFaq", async (req, res) => {
+      const addFaq = req.body;
+      const result = await faqsCollection.insertOne(addFaq);
+      console.log(result);
+      res.send(result);
+    });
+    app.patch("/updateFaq/:id", async (req, res) => {
+      const id = req.params.id;
+      const updateFaq = req.body;
+      const query = { _id: new ObjectId(id) };
       const updateDoc = {
         $set: {
           title: updateFaq.title,
           description: updateFaq.description,
-        }
-      }
-      const result = await faqsCollection.updateOne(query, updateDoc)
-      console.log(result)
-      res.send(result)
-    })
-    app.delete('/deleteFaq/:id', async (req, res) => {
-      const id = req.params.id
-      const query = { _id: new ObjectId(id) }
-      const result = await faqsCollection.deleteOne(query)
-      res.send(result)
-    })
+        },
+      };
+      const result = await faqsCollection.updateOne(query, updateDoc);
+      console.log(result);
+      res.send(result);
+    });
+    app.delete("/deleteFaq/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await faqsCollection.deleteOne(query);
+      res.send(result);
+    });
 
     // gallery images related apis
 
@@ -376,7 +424,6 @@ async function run() {
 
       const query = { email: email };
 
-
       const result = await testimonialsCollection.findOne(query);
       console.log("mttest ", result);
       res.send(result);
@@ -385,7 +432,7 @@ async function run() {
     app.delete("/testimonial", async (req, res) => {
       const { _id } = req.body;
       console.log("_id in delete  ", _id);
-      const query = { _id: new ObjectId(_id) }
+      const query = { _id: new ObjectId(_id) };
 
       const result = await testimonialsCollection.deleteOne(query);
       console.log("detele result  ", result);
@@ -438,21 +485,21 @@ async function run() {
       const result = await productsCollection.find().toArray();
       res.send(result);
     });
-    app.post('/product', async (req, res) => {
+    app.post("/product", async (req, res) => {
       const product = req.body;
       const result = await productsCollection.insertOne(product);
-      res.send(result)
-    })
-    app.get('/product/:id', async (req, res) => {
-      const id = req.params.id
-      const query = { _id: new ObjectId(id) }
-      const result = await productsCollection.findOne(query)
-      res.send(result)
-    })
-    app.patch('/updateProduct/:id', async (req, res) => {
+      res.send(result);
+    });
+    app.get("/product/:id", async (req, res) => {
       const id = req.params.id;
-      const updateProduct = req.body
-      const query = { _id: new ObjectId(id) }
+      const query = { _id: new ObjectId(id) };
+      const result = await productsCollection.findOne(query);
+      res.send(result);
+    });
+    app.patch("/updateProduct/:id", async (req, res) => {
+      const id = req.params.id;
+      const updateProduct = req.body;
+      const query = { _id: new ObjectId(id) };
       const updateDoc = {
         $set: {
           name: updateProduct.name,
@@ -461,19 +508,19 @@ async function run() {
           price: updateProduct.price,
           discount: updateProduct.discount,
           desc: updateProduct.desc,
-          timestamp: updateProduct.timestamp
-        }
-      }
-      const result = await productsCollection.updateOne(query, updateDoc)
-      console.log(result)
-      res.send(result)
-    })
-    app.delete('/product/:id', async (req, res) => {
-      const id = req.params.id
-      const query = { _id: new ObjectId(id) }
-      const result = await productsCollection.deleteOne(query)
-      res.send(result)
-    })
+          timestamp: updateProduct.timestamp,
+        },
+      };
+      const result = await productsCollection.updateOne(query, updateDoc);
+      console.log(result);
+      res.send(result);
+    });
+    app.delete("/product/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await productsCollection.deleteOne(query);
+      res.send(result);
+    });
 
     app.get("/product/:id", async (req, res) => {
       const id = req.params.id;
@@ -566,7 +613,7 @@ async function run() {
 
     app.post("/cart", async (req, res) => {
       const cart = req.body;
-
+      console.log(cart);
       // check if user already has the product in their cart
       const query = {
         "user.email": cart.user.email,
@@ -590,6 +637,22 @@ async function run() {
       res.send(result);
     });
 
+    //delete all cart items
+    app.delete("/carts", async (req, res) => {
+      const { email } = req.query;
+
+      const query = {
+        "user.email": email,
+      };
+
+      const allPaidcart = await cartCollection.find(query).toArray();
+
+      const paidCollection = await paidCart.insertMany(allPaidcart);
+
+      const result = await cartCollection.deleteMany(query);
+      res.send(result);
+    });
+
     // update cart quantity
 
     app.patch("/cart/:id", async (req, res) => {
@@ -606,6 +669,190 @@ async function run() {
       res.send(result);
     });
 
+    // contact related apis
+
+    app.get("/contact", async (req, res) => {
+      const result = await contactCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.post("/contact", async (req, res) => {
+      const contact = req.body;
+      const result = await contactCollection.insertOne(contact);
+      res.send(result);
+    });
+
+    app.delete("/contact/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await contactCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    // query related apis
+
+    app.get("/queries", async (req, res) => {
+      const result = await queryCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.get("/query/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await queryCollection.findOne(query);
+      res.send(result);
+    });
+
+    app.post("/query", async (req, res) => {
+      const query = req.body;
+      const result = await queryCollection.insertOne(query);
+      res.send(result);
+    });
+
+    app.patch("/query/upvote/add/:id", async (req, res) => {
+      const id = req.params.id;
+      const { email } = req.body;
+
+      const query = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $push: {
+          upVotes: email,
+        },
+      };
+      const result = await queryCollection.updateOne(query, updateDoc);
+      res.send(result);
+    });
+
+    app.patch("/query/upvote/remove/:id", async (req, res) => {
+      const id = req.params.id;
+      const { email } = req.body;
+
+      const query = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $pull: {
+          upVotes: email,
+        },
+      };
+      const result = await queryCollection.updateOne(query, updateDoc);
+      res.send(result);
+    });
+
+    // add comment to query
+    app.patch("/query/comment/add/:id", async (req, res) => {
+      const id = req.params.id;
+      const newComment = req.body;
+
+      // add a unique id to the comment
+      newComment._id = new ObjectId();
+
+      const query = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $push: {
+          comments: newComment,
+        },
+      };
+      const result = await queryCollection.updateOne(query, updateDoc);
+      res.send(result);
+    });
+
+    // delete a comment from query
+    app.patch("/query/comment/remove/:id", async (req, res) => {
+      const id = req.params.id;
+      const { commentId } = req.body;
+
+      const query = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $pull: {
+          comments: {
+            _id: new ObjectId(commentId),
+          },
+        },
+      };
+      const result = await queryCollection.updateOne(query, updateDoc);
+      res.send(result);
+    });
+
+    // like a comment
+    app.patch("/query/comment/like/add/:id", async (req, res) => {
+      const id = req.params.id;
+      const { commentId, email } = req.body;
+
+      const query = { _id: new ObjectId(id), "comments._id": new ObjectId(commentId) };
+      const updateDoc = {
+        $push: {
+          "comments.$.likes": email,
+        },
+      };
+      const result = await queryCollection.updateOne(query, updateDoc);
+      res.send(result);
+    });
+
+    // unlike a comment
+    app.patch("/query/comment/like/remove/:id", async (req, res) => {
+      const id = req.params.id;
+      const { commentId, email } = req.body;
+
+      const query = { _id: new ObjectId(id), "comments._id": new ObjectId(commentId) };
+      const updateDoc = {
+        $pull: {
+          "comments.$.likes": email,
+        },
+      };
+      const result = await queryCollection.updateOne(query, updateDoc);
+      res.send(result);
+    });
+
+    const stripeInstance = new Stripe(process.env.STRIPE_KEY);
+
+    app.post("/paymentStripe", async (req, res) => {
+      const { price } = req.body;
+      console.log("Price:", price);
+
+      const amount = parseInt(price * 100);
+
+      console.log("Amount:", amount);
+
+      const paymentIntent = await stripeInstance.paymentIntents.create({
+        amount: amount,
+        currency: "usd",
+        payment_method_types: ["card"],
+      });
+      console.log("PaymentIntent:", paymentIntent.client_secret);
+
+      res.send({
+        clientSecret: paymentIntent.client_secret,
+      });
+    });
+
+
+    // paid cart related apis
+    //all for admin 
+    app.get("/paidCart", async (req, res) => {
+      const result = await paidCart.find().toArray();
+      res.send(result);
+    });
+
+    app.post("/UserpaidCart", async (req, res) => {
+      const { email } = req.body; // Extract email from the request body
+      console.log("email", email);
+  
+      if (!email) {
+          return res.status(400).send({ error: "Email is required" });
+      }
+  
+      const query = {
+          "user.email": email,
+      };
+      console.log("query", query);
+  
+      try {
+          const result = await paidCart.find(query).toArray();
+          res.send(result);
+      } catch (error) {
+          console.error("Error fetching purchased books:", error);
+          res.status(500).send({ error: "Internal server error" });
+      }
+  });
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
