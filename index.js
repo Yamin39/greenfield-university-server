@@ -89,6 +89,20 @@ async function run() {
         updateDoc
       );
 
+      if (role === "Instructor") {
+         await instructorsCollection.insertOne({
+          name,
+          email,
+          universityId: id,
+          designation: "",
+          img: "",
+          rating: (Math.random() * (5.0 - 4.1) + 4.1).toFixed(1),
+          bio: "",
+          address: "",
+          phoneNumber: "",
+        });
+      }
+
       if (updateIsRegistered.modifiedCount === 1) {
         const user = await usersCollection.insertOne({
           name,
