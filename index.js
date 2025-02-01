@@ -657,10 +657,31 @@ async function run() {
     app.patch("/query/comment/add/:id", async (req, res) => {
       const id = req.params.id;
       const newComment = req.body;
+
+      // add a unique id to the comment
+      newComment._id = new ObjectId();
+
       const query = { _id: new ObjectId(id) };
       const updateDoc = {
         $push: {
           comments: newComment,
+        },
+      };
+      const result = await queryCollection.updateOne(query, updateDoc);
+      res.send(result);
+    });
+
+    // delete a comment from query
+    app.patch("/query/comment/remove/:id", async (req, res) => {
+      const id = req.params.id;
+      const { commentId } = req.body;
+
+      const query = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $pull: {
+          comments: {
+            _id: new ObjectId(commentId),
+          },
         },
       };
       const result = await queryCollection.updateOne(query, updateDoc);
