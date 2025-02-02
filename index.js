@@ -90,7 +90,7 @@ async function run() {
       );
 
       if (role === "Instructor") {
-         await instructorsCollection.insertOne({
+        await instructorsCollection.insertOne({
           name,
           email,
           universityId: id,
@@ -215,16 +215,17 @@ async function run() {
     //   res.send(result)
     // })
 
-
     app.get("/blogs", async (req, res) => {
       const { email, role } = req.query;
 
       // return
       if (role === "admin") {
-        const result = await blogsCollection.find({ status: 'approved' }).toArray();
+        const result = await blogsCollection
+          .find({ status: "approved" })
+          .toArray();
         return res.send(result);
       } else if (email) {
-        const query = { "author.email": email};
+        const query = { "author.email": email };
         const result = await blogsCollection.find(query).toArray();
         return res.send(result);
       }
@@ -289,18 +290,18 @@ async function run() {
       res.send(result);
     });
 
-    app.patch('/approveBlog/:id', async (req, res) => {
+    app.patch("/approveBlog/:id", async (req, res) => {
       const status = req.body.status;
       const id = req.params.id;
-      const query = { _id: new ObjectId(id) }
+      const query = { _id: new ObjectId(id) };
       const updatedDoc = {
         $set: {
-          status: status
-        }
-      }
-      const result = await blogsCollection.updateOne(query, updatedDoc)
-      res.send(result)
-    })
+          status: status,
+        },
+      };
+      const result = await blogsCollection.updateOne(query, updatedDoc);
+      res.send(result);
+    });
 
     // announcements related apis
 
@@ -422,12 +423,12 @@ async function run() {
       res.send(result);
     });
 
-    app.get('/userCourses', async (req, res) => {
+    app.get("/userCourses", async (req, res) => {
       const email = req.query.email;
-      const query = { "instructorDetails.email": email }
+      const query = { "instructorDetails.email": email };
       const result = await coursesCollection.find(query).toArray();
-      res.send(result)
-    })
+      res.send(result);
+    });
 
     app.get("/course/:id", async (req, res) => {
       const id = req.params.id;
@@ -436,33 +437,35 @@ async function run() {
       res.send(result);
     });
 
-    app.post('/course', async (req, res) => {
+    app.post("/course", async (req, res) => {
       const course = req.body;
       console.log(course);
       const result = await coursesCollection.insertOne(course);
-      res.send(result)
-    })
+      res.send(result);
+    });
 
-    app.delete('/course/:id', async (req, res) => {
+    app.delete("/course/:id", async (req, res) => {
       const id = req.params.id;
-      const query = { _id: new ObjectId(id) }
+      const query = { _id: new ObjectId(id) };
       const result = await coursesCollection.deleteOne(query);
-      res.send(result)
-    })
+      res.send(result);
+    });
 
-    app.patch('/approveCourse/:id', async (req, res) => {
+    app.patch("/approveCourse/:id", async (req, res) => {
       const id = req.params.id;
-      const query = { _id: new ObjectId(id) }
+      const query = { _id: new ObjectId(id) };
       const status = req.body.status;
       const updatedDoc = {
         $set: {
-          status: status
-        }
-      }
+          status: status,
+        },
+      };
 
-      const result = await coursesCollection.updateOne(query, updatedDoc, {upsert : true})
-      res.send(result)
-    })
+      const result = await coursesCollection.updateOne(query, updatedDoc, {
+        upsert: true,
+      });
+      res.send(result);
+    });
 
     // testimonials related api.
 
@@ -470,7 +473,7 @@ async function run() {
       const testimonial = req.body;
       console.log(testimonial);
       const result = await testimonialsCollection.insertOne(testimonial);
-    res.send(result);
+      res.send(result);
     });
 
     app.get("/mytestimonial", async (req, res) => {
@@ -857,7 +860,10 @@ async function run() {
       const id = req.params.id;
       const { commentId, email } = req.body;
 
-      const query = { _id: new ObjectId(id), "comments._id": new ObjectId(commentId) };
+      const query = {
+        _id: new ObjectId(id),
+        "comments._id": new ObjectId(commentId),
+      };
       const updateDoc = {
         $push: {
           "comments.$.likes": email,
@@ -872,7 +878,10 @@ async function run() {
       const id = req.params.id;
       const { commentId, email } = req.body;
 
-      const query = { _id: new ObjectId(id), "comments._id": new ObjectId(commentId) };
+      const query = {
+        _id: new ObjectId(id),
+        "comments._id": new ObjectId(commentId),
+      };
       const updateDoc = {
         $pull: {
           "comments.$.likes": email,
@@ -890,7 +899,10 @@ async function run() {
       // add a unique id to the reply
       reply._id = new ObjectId();
 
-      const query = { _id: new ObjectId(id), "comments._id": new ObjectId(commentId) };
+      const query = {
+        _id: new ObjectId(id),
+        "comments._id": new ObjectId(commentId),
+      };
       const updateDoc = {
         $push: {
           "comments.$.replies": reply,
@@ -905,7 +917,10 @@ async function run() {
       const id = req.params.id;
       const { commentId, replyId } = req.body;
 
-      const query = { _id: new ObjectId(id), "comments._id": new ObjectId(commentId) };
+      const query = {
+        _id: new ObjectId(id),
+        "comments._id": new ObjectId(commentId),
+      };
       const updateDoc = {
         $pull: {
           "comments.$.replies": {
@@ -921,47 +936,46 @@ async function run() {
     app.patch("/query/comment/reply/like/add/:id", async (req, res) => {
       const id = req.params.id;
       const { commentId, replyId, email } = req.body;
-      
+
       const query = { _id: new ObjectId(id) };
-      
+
       const updateDoc = {
-          $push: {
-              "comments.$[comment].replies.$[reply].likes": email
-          }
+        $push: {
+          "comments.$[comment].replies.$[reply].likes": email,
+        },
       };
-  
+
       const options = {
-          arrayFilters: [
-              { "comment._id": new ObjectId(commentId) },
-              { "reply._id": new ObjectId(replyId) }
-          ]
+        arrayFilters: [
+          { "comment._id": new ObjectId(commentId) },
+          { "reply._id": new ObjectId(replyId) },
+        ],
       };
-  
+
       const result = await queryCollection.updateOne(query, updateDoc, options);
       res.send(result);
     });
-  
 
     // unlike a reply to a comment in a query
     app.patch("/query/comment/reply/like/remove/:id", async (req, res) => {
       const id = req.params.id;
       const { commentId, replyId, email } = req.body;
-      
+
       const query = { _id: new ObjectId(id) };
-      
+
       const updateDoc = {
-          $pull: {
-              "comments.$[comment].replies.$[reply].likes": email
-          }
+        $pull: {
+          "comments.$[comment].replies.$[reply].likes": email,
+        },
       };
-  
+
       const options = {
-          arrayFilters: [
-              { "comment._id": new ObjectId(commentId) },
-              { "reply._id": new ObjectId(replyId) }
-          ]
+        arrayFilters: [
+          { "comment._id": new ObjectId(commentId) },
+          { "reply._id": new ObjectId(replyId) },
+        ],
       };
-  
+
       const result = await queryCollection.updateOne(query, updateDoc, options);
       res.send(result);
     });
@@ -990,9 +1004,8 @@ async function run() {
       });
     });
 
-
     // paid cart related apis
-    //all for admin 
+    //all for admin
     app.get("/paidCart", async (req, res) => {
       const result = await paidCart.find().toArray();
       res.send(result);
@@ -1019,6 +1032,33 @@ async function run() {
         res.status(500).send({ error: "Internal server error" });
       }
     });
+
+    app.get("/unregisteredInstructors", async (req, res) => {
+      const result = await universityIdsCollection
+        .find({
+          universityId: { $regex: "IN$" },
+          isRegistered: false,
+        })
+        .toArray();
+
+      res.send(result);
+    });
+    app.get("/unregisteredStudets", async (req, res) => {
+      const result = await universityIdsCollection
+        .find({
+          universityId: { $regex: "ST$" },
+          isRegistered: false,
+        })
+        .toArray();
+
+      res.send(result);
+    });
+
+    app.get("/unregisteredStudent", async (req, res) => {
+      const result = await instructorsCollection.find().toArray();
+      res.send(result);
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
