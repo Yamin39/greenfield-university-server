@@ -89,6 +89,20 @@ async function run() {
         updateDoc
       );
 
+      if (role === "Instructor") {
+         await instructorsCollection.insertOne({
+          name,
+          email,
+          universityId: id,
+          designation: "",
+          img: "",
+          rating: (Math.random() * (5.0 - 4.1) + 4.1).toFixed(1),
+          bio: "",
+          address: "",
+          phoneNumber: "",
+        });
+      }
+
       if (updateIsRegistered.modifiedCount === 1) {
         const user = await usersCollection.insertOne({
           name,
@@ -132,6 +146,13 @@ async function run() {
       } else {
         res.send({ role: null });
       }
+    });
+
+    // registered students
+
+    app.get("/students", async (req, res) => {
+      const result = await usersCollection.find({ role: "Student" }).toArray();
+      res.send(result);
     });
 
     // users related apis
@@ -814,6 +835,92 @@ async function run() {
       const result = await queryCollection.updateOne(query, updateDoc);
       res.send(result);
     });
+
+    // add a reply to a comment in a query
+    app.patch("/query/comment/reply/add/:id", async (req, res) => {
+      const id = req.params.id;
+      const { commentId, reply } = req.body;
+
+      // add a unique id to the reply
+      reply._id = new ObjectId();
+
+      const query = { _id: new ObjectId(id), "comments._id": new ObjectId(commentId) };
+      const updateDoc = {
+        $push: {
+          "comments.$.replies": reply,
+        },
+      };
+      const result = await queryCollection.updateOne(query, updateDoc);
+      res.send(result);
+    });
+
+    // delete a reply from a comment in a query
+    app.patch("/query/comment/reply/remove/:id", async (req, res) => {
+      const id = req.params.id;
+      const { commentId, replyId } = req.body;
+
+      const query = { _id: new ObjectId(id), "comments._id": new ObjectId(commentId) };
+      const updateDoc = {
+        $pull: {
+          "comments.$.replies": {
+            _id: new ObjectId(replyId),
+          },
+        },
+      };
+      const result = await queryCollection.updateOne(query, updateDoc);
+      res.send(result);
+    });
+
+    // like a reply to a comment in a query
+    app.patch("/query/comment/reply/like/add/:id", async (req, res) => {
+      const id = req.params.id;
+      const { commentId, replyId, email } = req.body;
+      
+      const query = { _id: new ObjectId(id) };
+      
+      const updateDoc = {
+          $push: {
+              "comments.$[comment].replies.$[reply].likes": email
+          }
+      };
+  
+      const options = {
+          arrayFilters: [
+              { "comment._id": new ObjectId(commentId) },
+              { "reply._id": new ObjectId(replyId) }
+          ]
+      };
+  
+      const result = await queryCollection.updateOne(query, updateDoc, options);
+      res.send(result);
+    });
+  
+
+    // unlike a reply to a comment in a query
+    app.patch("/query/comment/reply/like/remove/:id", async (req, res) => {
+      const id = req.params.id;
+      const { commentId, replyId, email } = req.body;
+      
+      const query = { _id: new ObjectId(id) };
+      
+      const updateDoc = {
+          $pull: {
+              "comments.$[comment].replies.$[reply].likes": email
+          }
+      };
+  
+      const options = {
+          arrayFilters: [
+              { "comment._id": new ObjectId(commentId) },
+              { "reply._id": new ObjectId(replyId) }
+          ]
+      };
+  
+      const result = await queryCollection.updateOne(query, updateDoc, options);
+      res.send(result);
+    });
+
+    // stripe payment related apis
 
     const stripeInstance = new Stripe(process.env.STRIPE_KEY);
 
