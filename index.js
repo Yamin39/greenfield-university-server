@@ -771,6 +771,13 @@ async function run() {
       res.send(result);
     });
 
+    app.delete("/query/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await queryCollection.deleteOne(query);
+      res.send(result);
+    });
+
     app.patch("/query/upvote/add/:id", async (req, res) => {
       const id = req.params.id;
       const { email } = req.body;
