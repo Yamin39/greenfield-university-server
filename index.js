@@ -731,6 +731,14 @@ async function run() {
     // query related apis
 
     app.get("/queries", async (req, res) => {
+      const { email } = req.query;
+
+      if (email) {
+        const query = { "author.email": email };
+        const result = await queryCollection.find(query).toArray();
+        return res.send(result);
+      }
+
       const result = await queryCollection.find().toArray();
       res.send(result);
     });
