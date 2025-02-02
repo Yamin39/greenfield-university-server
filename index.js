@@ -189,15 +189,20 @@ async function run() {
 
     // blogs related apis
 
+    // app.get('/approvedBlogs', async(req, res) =>{
+    //   const result = await blogsCollection.find({status : 'approved'}).toArray();
+    //   res.send(result)
+    // })
+
     app.get("/blogs", async (req, res) => {
       const { email, role } = req.query;
 
       // return
       if (role === "admin") {
-        const result = await blogsCollection.find().toArray();
+        const result = await blogsCollection.find({ status: 'approved' }).toArray();
         return res.send(result);
       } else if (email) {
-        const query = { "author.email": email };
+        const query = { "author.email": email, status: 'approved' };
         const result = await blogsCollection.find(query).toArray();
         return res.send(result);
       }
@@ -267,12 +272,12 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) }
       const updatedDoc = {
-        $set : {
-          status : status
+        $set: {
+          status: status
         }
       }
       const result = await blogsCollection.updateOne(query, updatedDoc)
-      res.send(result)      
+      res.send(result)
     })
 
     // announcements related apis
