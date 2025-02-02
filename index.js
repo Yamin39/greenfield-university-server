@@ -215,6 +215,7 @@ async function run() {
     //   res.send(result)
     // })
 
+
     app.get("/blogs", async (req, res) => {
       const { email, role } = req.query;
 
@@ -223,7 +224,7 @@ async function run() {
         const result = await blogsCollection.find({ status: 'approved' }).toArray();
         return res.send(result);
       } else if (email) {
-        const query = { "author.email": email, status: 'approved' };
+        const query = { "author.email": email};
         const result = await blogsCollection.find(query).toArray();
         return res.send(result);
       }
@@ -449,13 +450,27 @@ async function run() {
       res.send(result)
     })
 
+    app.patch('/approveCourse/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const status = req.body.status;
+      const updatedDoc = {
+        $set: {
+          status: status
+        }
+      }
+
+      const result = await coursesCollection.updateOne(query, updatedDoc, {upsert : true})
+      res.send(result)
+    })
+
     // testimonials related api.
 
     app.post("/testimonial", async (req, res) => {
       const testimonial = req.body;
       console.log(testimonial);
       const result = await testimonialsCollection.insertOne(testimonial);
-      res.send(result);
+    res.send(result);
     });
 
     app.get("/mytestimonial", async (req, res) => {
