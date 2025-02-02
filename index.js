@@ -72,6 +72,9 @@ async function run() {
       .db("greenfieldUniversityDB")
       .collection("query");
     const paidCart = client.db("greenfieldUniversityDB").collection("paidCart");
+    const newsletterCollection = client
+      .db("greenfieldUniversityDB")
+      .collection("newsletter");
 
     // registration related apis
 
@@ -1056,6 +1059,19 @@ async function run() {
 
     app.get("/unregisteredStudent", async (req, res) => {
       const result = await instructorsCollection.find().toArray();
+      res.send(result);
+    });
+
+    // newsletter related apis
+
+    app.get("/newsletter", async (req, res) => {
+      const result = await newsletterCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.post("/newsletter", async (req, res) => {
+      const newsletter = req.body;
+      const result = await newsletterCollection.insertOne(newsletter);
       res.send(result);
     });
 
