@@ -196,7 +196,7 @@ async function run() {
       if (role === "admin") {
         const result = await blogsCollection.find().toArray();
         return res.send(result);
-      } else if (email) { 
+      } else if (email) {
         const query = { "author.email": email };
         const result = await blogsCollection.find(query).toArray();
         return res.send(result);
@@ -261,6 +261,19 @@ async function run() {
       const result = await blogsCollection.updateOne(query, updatedDoc);
       res.send(result);
     });
+
+    app.patch('/approveBlog/:id', async (req, res) => {
+      const status = req.body.status;
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const updatedDoc = {
+        $set : {
+          status : status
+        }
+      }
+      const result = await blogsCollection.updateOne(query, updatedDoc)
+      res.send(result)      
+    })
 
     // announcements related apis
 
@@ -835,24 +848,24 @@ async function run() {
     app.post("/UserpaidCart", async (req, res) => {
       const { email } = req.body; // Extract email from the request body
       console.log("email", email);
-  
+
       if (!email) {
-          return res.status(400).send({ error: "Email is required" });
+        return res.status(400).send({ error: "Email is required" });
       }
-  
+
       const query = {
-          "user.email": email,
+        "user.email": email,
       };
       console.log("query", query);
-  
+
       try {
-          const result = await paidCart.find(query).toArray();
-          res.send(result);
+        const result = await paidCart.find(query).toArray();
+        res.send(result);
       } catch (error) {
-          console.error("Error fetching purchased books:", error);
-          res.status(500).send({ error: "Internal server error" });
+        console.error("Error fetching purchased books:", error);
+        res.status(500).send({ error: "Internal server error" });
       }
-  });
+    });
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
