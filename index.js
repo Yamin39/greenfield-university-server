@@ -75,6 +75,9 @@ async function run() {
     const newsletterCollection = client
       .db("greenfieldUniversityDB")
       .collection("newsletter");
+    const purchasedCoursesCollection = client
+      .db("greenfieldUniversityDB")
+      .collection("purchasedCourses");
 
     // registration related apis
 
@@ -1103,6 +1106,14 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await newsletterCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    // purchased courses related apis
+    
+    app.post("/purchasedCourses", async (req, res) => {
+      const purchasedCourse = req.body;
+      const result = await purchasedCoursesCollection.insertOne(purchasedCourse);
       res.send(result);
     });
 
