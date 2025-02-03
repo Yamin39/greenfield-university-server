@@ -545,6 +545,17 @@ async function run() {
       res.send(result);
     });
 
+    app.patch("/event/:id", async (req, res) => {
+      const id = req.params.id;
+      const event = req.body;
+      const query = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: event,
+      };
+      const result = await eventsCollection.updateOne(query, updateDoc);
+      res.send(result);
+    });
+
     // products related apis
 
     app.get("/products", async (req, res) => {
