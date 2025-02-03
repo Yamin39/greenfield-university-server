@@ -1110,6 +1110,26 @@ async function run() {
     });
 
     // purchased courses related apis
+
+    app.get("/purchasedCourses", async (req, res) => {
+      const { id, email } = req.query;
+
+      console.log(id, email);
+      
+      if (id && email) {
+        const query = { courseId: id, "author.email": email };
+        const result = await purchasedCoursesCollection.findOne(query);
+        console.log(result);
+        return res.send(result);
+      } else if (email) {
+        const query = { "author.email": email };
+        const result = await purchasedCoursesCollection.find(query).toArray();
+        return res.send(result);
+      }
+
+      const result = await purchasedCoursesCollection.find().toArray();
+      res.send(result);
+    });
     
     app.post("/purchasedCourses", async (req, res) => {
       const purchasedCourse = req.body;
