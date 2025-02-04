@@ -23,58 +23,25 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // collections
-    const instructorsCollection = client
-      .db("greenfieldUniversityDB")
-      .collection("instructors");
-    const blogsCollection = client
-      .db("greenfieldUniversityDB")
-      .collection("blogs");
-    const announcementsCollection = client
-      .db("greenfieldUniversityDB")
-      .collection("announcements");
-    const universityIdsCollection = client
-      .db("greenfieldUniversityDB")
-      .collection("universityIds");
-    const usersCollection = client
-      .db("greenfieldUniversityDB")
-      .collection("users");
-    const faqsCollection = client
-      .db("greenfieldUniversityDB")
-      .collection("faqs");
-    const galleryImagesCollection = client
-      .db("greenfieldUniversityDB")
-      .collection("galleryImages");
-    const testimonialsCollection = client
-      .db("greenfieldUniversityDB")
-      .collection("testimonials");
-    const coursesCollection = client
-      .db("greenfieldUniversityDB")
-      .collection("courses");
-    const eventsCollection = client
-      .db("greenfieldUniversityDB")
-      .collection("events");
-    const productsCollection = client
-      .db("greenfieldUniversityDB")
-      .collection("products");
-    const newsCollection = client
-      .db("greenfieldUniversityDB")
-      .collection("news");
-    const wishlistCollection = client
-      .db("greenfieldUniversityDB")
-      .collection("wishlist");
-    const cartCollection = client
-      .db("greenfieldUniversityDB")
-      .collection("cart");
-    const contactCollection = client
-      .db("greenfieldUniversityDB")
-      .collection("contact");
-    const queryCollection = client
-      .db("greenfieldUniversityDB")
-      .collection("query");
+    const instructorsCollection = client.db("greenfieldUniversityDB").collection("instructors");
+    const blogsCollection = client.db("greenfieldUniversityDB").collection("blogs");
+    const announcementsCollection = client.db("greenfieldUniversityDB").collection("announcements");
+    const universityIdsCollection = client.db("greenfieldUniversityDB").collection("universityIds");
+    const usersCollection = client.db("greenfieldUniversityDB").collection("users");
+    const faqsCollection = client.db("greenfieldUniversityDB").collection("faqs");
+    const galleryImagesCollection = client.db("greenfieldUniversityDB").collection("galleryImages");
+    const testimonialsCollection = client.db("greenfieldUniversityDB").collection("testimonials");
+    const coursesCollection = client.db("greenfieldUniversityDB").collection("courses");
+    const eventsCollection = client.db("greenfieldUniversityDB").collection("events");
+    const productsCollection = client.db("greenfieldUniversityDB").collection("products");
+    const newsCollection = client.db("greenfieldUniversityDB").collection("news");
+    const wishlistCollection = client.db("greenfieldUniversityDB").collection("wishlist");
+    const cartCollection = client.db("greenfieldUniversityDB").collection("cart");
+    const contactCollection = client.db("greenfieldUniversityDB").collection("contact");
+    const queryCollection = client.db("greenfieldUniversityDB").collection("query");
     const paidCart = client.db("greenfieldUniversityDB").collection("paidCart");
-    const newsletterCollection = client
-      .db("greenfieldUniversityDB")
-      .collection("newsletter");
+    const newsletterCollection = client.db("greenfieldUniversityDB").collection("newsletter");
+    const purchasedCoursesCollection = client.db("greenfieldUniversityDB").collection("purchasedCourses");
 
     // registration related apis
 
@@ -87,10 +54,7 @@ async function run() {
           isRegistered: true,
         },
       };
-      const updateIsRegistered = await universityIdsCollection.updateOne(
-        filter,
-        updateDoc
-      );
+      const updateIsRegistered = await universityIdsCollection.updateOne(filter, updateDoc);
 
       if (role === "Instructor") {
         await instructorsCollection.insertOne({
@@ -223,9 +187,7 @@ async function run() {
 
       // return
       if (role === "admin") {
-        const result = await blogsCollection
-          .find({ status: "approved" })
-          .toArray();
+        const result = await blogsCollection.find({ status: "approved" }).toArray();
         return res.send(result);
       } else if (email) {
         const query = { "author.email": email };
@@ -392,10 +354,7 @@ async function run() {
     // gallery images related apis
 
     app.get("/gallery", async (req, res) => {
-      const result = await galleryImagesCollection
-        .find()
-        .sort({ _id: -1 })
-        .toArray();
+      const result = await galleryImagesCollection.find().sort({ _id: -1 }).toArray();
       res.send(result);
     });
 
@@ -503,9 +462,7 @@ async function run() {
       const { email, updatedTestimonial } = req.body;
 
       if (!email || !updatedTestimonial) {
-        return res
-          .status(400)
-          .json({ message: "Email and updatedTestimonial are required" });
+        return res.status(400).json({ message: "Email and updatedTestimonial are required" });
       }
 
       const query = { email: email };
@@ -536,6 +493,30 @@ async function run() {
       const query = { _id: new ObjectId(id) };
       const result = await eventsCollection.findOne(query);
       console.log(result);
+      res.send(result);
+    });
+
+    app.post("/event", async (req, res) => {
+      const event = req.body;
+      const result = await eventsCollection.insertOne(event);
+      res.send(result);
+    });
+
+    app.patch("/event/:id", async (req, res) => {
+      const id = req.params.id;
+      const event = req.body;
+      const query = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: event,
+      };
+      const result = await eventsCollection.updateOne(query, updateDoc);
+      res.send(result);
+    });
+
+    app.delete("/event/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await eventsCollection.deleteOne(query);
       res.send(result);
     });
 
@@ -949,10 +930,7 @@ async function run() {
       };
 
       const options = {
-        arrayFilters: [
-          { "comment._id": new ObjectId(commentId) },
-          { "reply._id": new ObjectId(replyId) },
-        ],
+        arrayFilters: [{ "comment._id": new ObjectId(commentId) }, { "reply._id": new ObjectId(replyId) }],
       };
 
       const result = await queryCollection.updateOne(query, updateDoc, options);
@@ -973,10 +951,7 @@ async function run() {
       };
 
       const options = {
-        arrayFilters: [
-          { "comment._id": new ObjectId(commentId) },
-          { "reply._id": new ObjectId(replyId) },
-        ],
+        arrayFilters: [{ "comment._id": new ObjectId(commentId) }, { "reply._id": new ObjectId(replyId) }],
       };
 
       const result = await queryCollection.updateOne(query, updateDoc, options);
@@ -1082,11 +1057,233 @@ async function run() {
       res.send(result);
     });
 
+    // purchased courses related apis
+
+    app.get("/purchasedCourses", async (req, res) => {
+      const { id, email } = req.query;
+
+      console.log(id, email);
+
+      if (id && email) {
+        const query = { courseId: id, "author.email": email };
+        const result = await purchasedCoursesCollection.findOne(query);
+        console.log(result);
+        return res.send(result);
+      } else if (email) {
+        const query = { "author.email": email };
+        const result = await purchasedCoursesCollection.find(query).toArray();
+        return res.send(result);
+      }
+
+      const result = await purchasedCoursesCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.post("/purchasedCourses", async (req, res) => {
+      const purchasedCourse = req.body;
+      const result = await purchasedCoursesCollection.insertOne(purchasedCourse);
+      res.send(result);
+    });
+
+    // student statistics related apis
+
+    /*
+    app.get("/studentStatistics", async (req, res) => {
+      const { email } = req.query;
+
+      // get enrolled courses
+      const enrolledCourses = await purchasedCoursesCollection.find({ "author.email": email }).toArray();
+
+      // get Books Purchased
+      const purchasedBooks = await paidCart.find({ "user.email": email }).toArray();
+
+      // get Queries Submitted
+      const queries = await queryCollection.find({ "author.email": email }).toArray();
+
+      // get Blogs Written
+      const blogs = await blogsCollection.find({ "author.email": email }).toArray();
+
+      // get Blogs Approved
+      const approvedBlogs = await blogsCollection.find({ "author.email": email, status: "approved" }).toArray();
+
+      // get Blogs Rejected
+      const rejectedBlogs = await blogsCollection.find({ "author.email": email, status: "rejected" }).toArray();
+
+      const result = {
+        enrolledCourses: enrolledCourses.length,
+        purchasedBooks: purchasedBooks.length,
+        queries: queries.length,
+        blogs: blogs.length,
+        approvedBlogs: approvedBlogs.length,
+        rejectedBlogs: rejectedBlogs.length,
+      };
+
+      res.send(result);
+    });
+    */
+
+    // optimized version of student statistics
+    app.get("/studentStatistics", async (req, res) => {
+      try {
+        const { email } = req.query;
+
+        if (!email) {
+          return res.status(400).json({ error: "Email is required" });
+        }
+
+        const [enrolledCourses, purchasedBooks, queries, blogs] = await Promise.all([
+          purchasedCoursesCollection.countDocuments({ "author.email": email }),
+          paidCart.countDocuments({ "user.email": email }),
+          queryCollection.countDocuments({ "author.email": email }),
+          blogsCollection.find({ "author.email": email }).toArray(),
+        ]);
+
+        // Count approved & rejected blogs
+        const approvedBlogs = blogs.filter((blog) => blog.status === "approved").length;
+        const rejectedBlogs = blogs.filter((blog) => blog.status === "rejected").length;
+
+        const result = {
+          enrolledCourses,
+          purchasedBooks,
+          queries,
+          blogs: blogs.length,
+          approvedBlogs,
+          rejectedBlogs,
+        };
+
+        res.json(result);
+      } catch (error) {
+        console.error("Error fetching student statistics:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+      }
+    });
+
+    // instructor statistics related apis: Courses Created, Courses Approved, Blogs Written [optimized version]
+    app.get("/instructorStatistics", async (req, res) => {
+      try {
+        const { email } = req.query;
+
+        if (!email) {
+          return res.status(400).json({ error: "Email is required" });
+        }
+
+        const [coursesCreated, coursesApproved, blogs] = await Promise.all([
+          coursesCollection.countDocuments({ "instructorDetails.email": email }),
+          coursesCollection.countDocuments({ "instructorDetails.email": email, status: "approved" }),
+          blogsCollection.countDocuments({ "author.email": email }),
+        ]);
+
+        const result = {
+          coursesCreated,
+          coursesApproved,
+          blogs,
+        };
+
+        res.json(result);
+      } catch (error) {
+        console.error("Error fetching instructor statistics:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+      }
+    });
+
+    // admin statistics related apis
+
+    app.get("/adminStatistics", async (req, res) => {
+      try {
+        const [
+          revenueResult,
+          totalBooksSold,
+          totalApprovedCourses,
+          totalApprovedBlogs,
+          transactions,
+          registeredStudents,
+          registeredInstructors,
+          unregisteredStudents,
+          unregisteredInstructors,
+          announcements,
+          faqs,
+          galleryImages,
+          testimonials,
+          contactRequests,
+          newsletterSubscribers,
+          events,
+        ] = await Promise.all([
+          // Revenue
+          paidCart
+            .aggregate([{ $group: { _id: null, total: { $sum: "$price" } } }])
+            .toArray()
+            .catch(() => []),
+
+          // Counts with error catching
+          paidCart.countDocuments().catch(() => 0),
+          coursesCollection.countDocuments({ status: "approved" }).catch(() => 0),
+          blogsCollection.countDocuments({ status: "approved" }).catch(() => 0),
+          paidCart
+            .find()
+            .toArray()
+            .catch(() => []),
+          usersCollection.countDocuments({ role: "Student" }).catch(() => 0),
+          usersCollection.countDocuments({ role: "Instructor" }).catch(() => 0),
+          universityIdsCollection
+            .countDocuments({
+              universityId: { $regex: "ST$" },
+              isRegistered: false,
+            })
+            .catch(() => 0),
+          universityIdsCollection
+            .countDocuments({
+              universityId: { $regex: "IN$" },
+              isRegistered: false,
+            })
+            .catch(() => 0),
+          announcementsCollection.countDocuments().catch(() => 0),
+          faqsCollection.countDocuments().catch(() => 0),
+          galleryImagesCollection.countDocuments().catch(() => 0),
+          testimonialsCollection.countDocuments().catch(() => 0),
+          contactCollection.countDocuments().catch(() => 0),
+          newsletterCollection.countDocuments().catch(() => 0),
+          eventsCollection.countDocuments().catch(() => 0),
+        ]);
+
+        const result = {
+          revenue: revenueResult.length > 0 ? revenueResult[0].total : 0,
+          totalBooksSold,
+          totalApprovedCourses,
+          totalApprovedBlogs,
+          purchasedItems: transactions,
+          registeredStudents,
+          registeredInstructors,
+          unregisteredStudents,
+          unregisteredInstructors,
+          announcements,
+          faqs,
+          galleryImages,
+          testimonials,
+          contactRequests,
+          newsletterSubscribers,
+          events,
+        };
+
+        res.json(result);
+      } catch (error) {
+        console.error("Full Error Context:", {
+          message: error.message,
+          stack: error.stack,
+          name: error.name,
+        });
+        res.status(500).json({
+          error: "Failed to load statistics",
+          ...(process.env.NODE_ENV === "development" && {
+            details: error.message,
+            stack: error.stack,
+          }),
+        });
+      }
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
-    console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!"
-    );
+    console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // await client.close();
   }
