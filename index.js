@@ -1186,6 +1186,101 @@ async function run() {
       }
     });
 
+    // admin statistics related apis
+
+    app.get("/adminStatistics", async (req, res) => {
+      try {
+        const [
+          revenueResult,
+          totalBooksSold,
+          totalApprovedCourses,
+          totalApprovedBlogs,
+          transactions,
+          registeredStudents,
+          registeredInstructors,
+          unregisteredStudents,
+          unregisteredInstructors,
+          announcements,
+          faqs,
+          galleryImages,
+          testimonials,
+          contactRequests,
+          newsletterSubscribers,
+          events,
+        ] = await Promise.all([
+          // Revenue
+          paidCart
+            .aggregate([{ $group: { _id: null, total: { $sum: "$price" } } }])
+            .toArray()
+            .catch(() => []),
+
+          // Counts with error catching
+          paidCart.countDocuments().catch(() => 0),
+          coursesCollection.countDocuments({ status: "approved" }).catch(() => 0),
+          blogsCollection.countDocuments({ status: "approved" }).catch(() => 0),
+          paidCart
+            .find()
+            .toArray()
+            .catch(() => []),
+          usersCollection.countDocuments({ role: "Student" }).catch(() => 0),
+          usersCollection.countDocuments({ role: "Instructor" }).catch(() => 0),
+          universityIdsCollection
+            .countDocuments({
+              universityId: { $regex: "ST$" },
+              isRegistered: false,
+            })
+            .catch(() => 0),
+          universityIdsCollection
+            .countDocuments({
+              universityId: { $regex: "IN$" },
+              isRegistered: false,
+            })
+            .catch(() => 0),
+          announcementsCollection.countDocuments().catch(() => 0),
+          faqsCollection.countDocuments().catch(() => 0),
+          galleryImagesCollection.countDocuments().catch(() => 0),
+          testimonialsCollection.countDocuments().catch(() => 0),
+          contactCollection.countDocuments().catch(() => 0),
+          newsletterCollection.countDocuments().catch(() => 0),
+          eventsCollection.countDocuments().catch(() => 0),
+        ]);
+
+        const result = {
+          revenue: revenueResult.length > 0 ? revenueResult[0].total : 0,
+          totalBooksSold,
+          totalApprovedCourses,
+          totalApprovedBlogs,
+          purchasedItems: transactions,
+          registeredStudents,
+          registeredInstructors,
+          unregisteredStudents,
+          unregisteredInstructors,
+          announcements,
+          faqs,
+          galleryImages,
+          testimonials,
+          contactRequests,
+          newsletterSubscribers,
+          events,
+        };
+
+        res.json(result);
+      } catch (error) {
+        console.error("Full Error Context:", {
+          message: error.message,
+          stack: error.stack,
+          name: error.name,
+        });
+        res.status(500).json({
+          error: "Failed to load statistics",
+          ...(process.env.NODE_ENV === "development" && {
+            details: error.message,
+            stack: error.stack,
+          }),
+        });
+      }
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
