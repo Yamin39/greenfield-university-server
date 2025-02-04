@@ -1158,6 +1158,34 @@ async function run() {
       }
     });
 
+    // instructor statistics related apis: Courses Created, Courses Approved, Blogs Written [optimized version]
+    app.get("/instructorStatistics", async (req, res) => {
+      try {
+        const { email } = req.query;
+
+        if (!email) {
+          return res.status(400).json({ error: "Email is required" });
+        }
+
+        const [coursesCreated, coursesApproved, blogs] = await Promise.all([
+          coursesCollection.countDocuments({ "instructorDetails.email": email }),
+          coursesCollection.countDocuments({ "instructorDetails.email": email, status: "approved" }),
+          blogsCollection.countDocuments({ "author.email": email }),
+        ]);
+
+        const result = {
+          coursesCreated,
+          coursesApproved,
+          blogs,
+        };
+
+        res.json(result);
+      } catch (error) {
+        console.error("Error fetching instructor statistics:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+      }
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
