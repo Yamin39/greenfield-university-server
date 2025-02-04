@@ -1087,46 +1087,40 @@ async function run() {
 
     // student statistics related apis
 
-    // app.get("/studentStatistics", async (req, res) => {
-    //   const { email } = req.query;
+    /*
+    app.get("/studentStatistics", async (req, res) => {
+      const { email } = req.query;
 
-    //   // get enrolled courses
-    //   const enrolledCourses = await purchasedCoursesCollection
-    //     .find({ "author.email": email })
-    //     .toArray();
+      // get enrolled courses
+      const enrolledCourses = await purchasedCoursesCollection.find({ "author.email": email }).toArray();
 
-    //   // get Books Purchased
-    //   const purchasedBooks = await paidCart
-    //     .find({ "user.email": email })
-    //     .toArray();
+      // get Books Purchased
+      const purchasedBooks = await paidCart.find({ "user.email": email }).toArray();
 
-    //   // get Queries Submitted
-    //   const queries = await queryCollection.find({ "author.email": email }).toArray();
+      // get Queries Submitted
+      const queries = await queryCollection.find({ "author.email": email }).toArray();
 
-    //   // get Blogs Written
-    //   const blogs = await blogsCollection.find({ "author.email": email }).toArray();
+      // get Blogs Written
+      const blogs = await blogsCollection.find({ "author.email": email }).toArray();
 
-    //   // get Blogs Approved
-    //   const approvedBlogs = await blogsCollection
-    //     .find({ "author.email": email, status: "approved" })
-    //     .toArray();
+      // get Blogs Approved
+      const approvedBlogs = await blogsCollection.find({ "author.email": email, status: "approved" }).toArray();
 
-    //   // get Blogs Rejected
-    //   const rejectedBlogs = await blogsCollection
-    //     .find({ "author.email": email, status: "rejected" })
-    //     .toArray();
+      // get Blogs Rejected
+      const rejectedBlogs = await blogsCollection.find({ "author.email": email, status: "rejected" }).toArray();
 
-    //   const result = {
-    //     enrolledCourses: enrolledCourses.length,
-    //     purchasedBooks: purchasedBooks.length,
-    //     queries: queries.length,
-    //     blogs: blogs.length,
-    //     approvedBlogs: approvedBlogs.length,
-    //     rejectedBlogs: rejectedBlogs.length,
-    //   };
+      const result = {
+        enrolledCourses: enrolledCourses.length,
+        purchasedBooks: purchasedBooks.length,
+        queries: queries.length,
+        blogs: blogs.length,
+        approvedBlogs: approvedBlogs.length,
+        rejectedBlogs: rejectedBlogs.length,
+      };
 
-    //   res.send(result);
-    // })
+      res.send(result);
+    });
+    */
 
     // optimized version of student statistics
     app.get("/studentStatistics", async (req, res) => {
