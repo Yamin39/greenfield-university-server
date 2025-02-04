@@ -1137,6 +1137,91 @@ async function run() {
       res.send(result);
     });
 
+    // student statistics related apis
+
+    // app.get("/studentStatistics", async (req, res) => {
+    //   const { email } = req.query;
+
+    //   // get enrolled courses
+    //   const enrolledCourses = await purchasedCoursesCollection
+    //     .find({ "author.email": email })
+    //     .toArray();
+
+    //   // get Books Purchased
+    //   const purchasedBooks = await paidCart
+    //     .find({ "user.email": email })
+    //     .toArray();
+
+    //   // get Queries Submitted
+    //   const queries = await queryCollection.find({ "author.email": email }).toArray();
+
+    //   // get Blogs Written
+    //   const blogs = await blogsCollection.find({ "author.email": email }).toArray();
+
+    //   // get Blogs Approved
+    //   const approvedBlogs = await blogsCollection
+    //     .find({ "author.email": email, status: "approved" })
+    //     .toArray();
+
+    //   // get Blogs Rejected
+    //   const rejectedBlogs = await blogsCollection
+    //     .find({ "author.email": email, status: "rejected" })
+    //     .toArray();
+
+    //   const result = {
+    //     enrolledCourses: enrolledCourses.length,
+    //     purchasedBooks: purchasedBooks.length,
+    //     queries: queries.length,
+    //     blogs: blogs.length,
+    //     approvedBlogs: approvedBlogs.length,
+    //     rejectedBlogs: rejectedBlogs.length,
+    //   };
+
+    //   res.send(result);
+    // })
+
+    // optimized version of student statistics
+    app.get("/studentStatistics", async (req, res) => {
+      try {
+          const { email } = req.query;
+  
+          if (!email) {
+              return res.status(400).json({ error: "Email is required" });
+          }
+  
+          const [
+              enrolledCourses,
+              purchasedBooks,
+              queries,
+              blogs
+          ] = await Promise.all([
+              purchasedCoursesCollection.countDocuments({ "author.email": email }),
+              paidCart.countDocuments({ "user.email": email }),
+              queryCollection.countDocuments({ "author.email": email }),
+              blogsCollection.find({ "author.email": email }).toArray(),
+          ]);
+  
+          // Count approved & rejected blogs
+          const approvedBlogs = blogs.filter(blog => blog.status === "approved").length;
+          const rejectedBlogs = blogs.filter(blog => blog.status === "rejected").length;
+  
+          const result = {
+              enrolledCourses,
+              purchasedBooks,
+              queries,
+              blogs: blogs.length,
+              approvedBlogs,
+              rejectedBlogs
+          };
+  
+          res.json(result);
+      } catch (error) {
+          console.error("Error fetching student statistics:", error);
+          res.status(500).json({ error: "Internal Server Error" });
+      }
+  });
+  
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
